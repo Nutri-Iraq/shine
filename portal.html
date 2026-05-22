@@ -114,7 +114,7 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
     <button class="tab" onclick="switchTab('report')">📊 تقريري</button>
     <button class="tab" onclick="switchTab('weight')">⚖️ منحنى الوزن</button>
     <button class="tab" onclick="switchTab('reminders')">🔔 تذكيراتي</button>
-    <button class="tab" onclick="openWhatsApp()" style="background:linear-gradient(135deg,#25d366,#128c7e);color:white;border-color:transparent;">💬 تواصلي مع الكوتش</button>
+    <button id="waTabBtn" class="tab" onclick="openWhatsApp()" style="background:linear-gradient(135deg,#25d366,#128c7e);color:white;border-color:transparent;">💬 تواصلي مع الكوتش</button>
   </div>
 
   <!-- إدخال يومي -->
@@ -345,6 +345,7 @@ function showDashboard(){
   document.getElementById('userName').textContent=ME.name;
   document.getElementById('eDate').value=new Date().toISOString().split('T')[0];
   loadReminders();
+  loadWAConfig();
   checkReminders();
   renderRecent();renderReport();renderWeightChart();
 }
@@ -395,23 +396,39 @@ async function saveEntry(){
   }catch(e){toast('⚠️ خطأ في الاتصال');}
 }
 
+// إعدادات واتساب من السيرفر
+let WA_CONFIG = { enabled: true, phone: '9647832080324' };
+
+async function loadWAConfig() {
+  try {
+    const r = await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/settings?key=eq.wa_config&select=value', {
+      headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8' }
+    });
+    const data = await r.json();
+    if(data && data[0] && data[0].value) {
+      WA_CONFIG = JSON.parse(data[0].value);
+    }
+  } catch(e) {}
+  // أظهر أو أخفِ زر واتساب
+  const waBtn = document.getElementById('waTabBtn');
+  if(waBtn) waBtn.style.display = WA_CONFIG.enabled ? '' : 'none';
+}
+
 function openWhatsApp() {
-  if(!ME) return;
+  if(!ME || !WA_CONFIG.enabled) return;
   const today = new Date().toISOString().split('T')[0];
   const todayEntry = MY_ENTRIES.find(e => e.date === today);
-  let msg = `مرحبا كوتشتي 💕\nأنا ${ME.name}\n`;
+  let msg = 'مرحبا كوتشتي\nأنا ' + ME.name + '\n';
   if(todayEntry) {
-    msg += `وجبات اليوم:\n`;
-    if(todayEntry.breakfast) msg += `🌅 الفطور: ${todayEntry.breakfast}\n`;
-    if(todayEntry.lunch)     msg += `☀️ الغداء: ${todayEntry.lunch}\n`;
-    if(todayEntry.dinner)    msg += `🌙 العشاء: ${todayEntry.dinner}\n`;
-    if(todayEntry.snack)     msg += `🍎 السناك: ${todayEntry.snack}\n`;
-    if(todayEntry.water)     msg += `💧 الماء: ${todayEntry.water} لتر\n`;
+    msg += 'وجبات اليوم:\n';
+    if(todayEntry.breakfast) msg += 'الفطور: ' + todayEntry.breakfast + '\n';
+    if(todayEntry.lunch)     msg += 'الغداء: ' + todayEntry.lunch     + '\n';
+    if(todayEntry.dinner)    msg += 'العشاء: ' + todayEntry.dinner    + '\n';
+    if(todayEntry.snack)     msg += 'السناك: ' + todayEntry.snack     + '\n';
+    if(todayEntry.water)     msg += 'الماء: '  + todayEntry.water     + ' لتر\n';
   }
-  msg += `\nعندي سؤال: `;
-  // غيّري الرقم هنا
-  const COACH_PHONE = '9647832080324';
-  const url = `https://wa.me/${COACH_PHONE}?text=${encodeURIComponent(msg)}`;
+  msg += '\nعندي سؤال: ';
+  const url = 'https://wa.me/' + WA_CONFIG.phone + '?text=' + encodeURIComponent(msg);
   window.open(url, '_blank');
 }
 function saveReminders() {
