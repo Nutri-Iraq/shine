@@ -320,8 +320,15 @@ async function doLogin(){
   const btn=document.getElementById('loginBtn');
   btn.textContent='⏳ جاري الدخول...';btn.disabled=true;
   try{
-    const r=await fetch('/.netlify/functions/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,password:pass})});
-    const d=await r.json();
+    const _r1=await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/subscribers?phone=eq.'+encodeURIComponent(phone)+'&status=eq.approved&select=*',{headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8'}});
+    const _subs=await _r1.json();
+    if(!Array.isArray(_subs)||!_subs.length){showErr('الرقم غير موجود أو لم تتم الموافقة بعد');btn.textContent='دخول';btn.disabled=false;return;}
+    const _sub=_subs[0];
+    if(_sub.password!==pass){showErr('كلمة السر غير صحيحة');btn.textContent='دخول';btn.disabled=false;return;}
+    const _er=await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/entries?sub_id=eq.'+_sub.id+'&order=date.desc&select=*',{headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8'}});
+    const _entries=await _er.json();
+    const d={sub:_sub,entries:Array.isArray(_entries)?_entries:[]};
+    const r={ok:true};
     if(!r.ok){showErr(d.error||'خطأ في تسجيل الدخول');btn.textContent='🔐 دخول';btn.disabled=false;return;}
     ME=d.sub; MY_ENTRIES=d.entries||[];
     localStorage.setItem('shine_sub',JSON.stringify(ME));
@@ -375,7 +382,7 @@ async function saveEntry(){
     commit:'جيد', // افتراضي
   };
   try{
-    const r=await fetch('/.netlify/functions/entry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
+    const r=await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/entries?on_conflict=sub_id,date',{method:'POST',headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8','Prefer':'resolution=merge-duplicates'},body:JSON.stringify(entry)});
     if(r.ok){
       // تحديث محلي
       const idx=MY_ENTRIES.findIndex(e=>e.date===entry.date);
