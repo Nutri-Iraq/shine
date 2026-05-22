@@ -347,6 +347,7 @@ function showDashboard(){
   loadReminders();
   loadWAConfig();
   checkReminders();
+  setTimeout(initPortalRealtime, 2000);
   renderRecent();renderReport();renderWeightChart();
 }
 
@@ -411,7 +412,13 @@ async function loadWAConfig() {
   } catch(e) {}
   // أظهر أو أخفِ زر واتساب
   const waBtn = document.getElementById('waTabBtn');
-  if(waBtn) waBtn.style.display = WA_CONFIG.enabled ? '' : 'none';
+  if(waBtn) {
+    if(WA_CONFIG.enabled) {
+      waBtn.style.display = '';
+    } else {
+      waBtn.style.display = 'none';
+    }
+  }
 }
 
 function openWhatsApp() {
@@ -505,6 +512,35 @@ function checkReminders() {
 
 // فحص كل دقيقة
 setInterval(checkReminders, 60*1000);
+
+// ====== تحديث فوري من السيرفر ======
+async function initPortalRealtime() {
+  if(!ME) return;
+  try {
+    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    const sb = createClient(
+      'https://laqiqcyiztvpqctxnxvx.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8'
+    );
+    // مراقبة إدخالاتها
+    sb.channel('my-entries')
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'entries',
+        filter: `sub_id=eq.${ME.id}`
+      }, async payload => {
+        // تحديث الإدخالات
+        const r = await fetch(
+          `https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/entries?sub_id=eq.${ME.id}&order=date.desc&select=*`,
+          { headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8' } }
+        );
+        MY_ENTRIES = await r.json() || [];
+        localStorage.setItem('shine_entries', JSON.stringify(MY_ENTRIES));
+        renderRecent(); renderReport(); renderWeightChart();
+        checkReminders();
+      })
+      .subscribe();
+  } catch(e) {}
+}
 
 function onDateChange(date) {
   // ابحث عن إدخال موجود لهذا اليوم
