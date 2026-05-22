@@ -407,6 +407,7 @@ function openWhatsApp() {
   const url = `https://wa.me/${COACH_PHONE}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
 }
+function saveReminders() {
   const r = {
     breakfast: { time: document.getElementById('time-breakfast').value, on: document.getElementById('check-breakfast').checked },
     lunch:     { time: document.getElementById('time-lunch').value,     on: document.getElementById('check-lunch').checked },
