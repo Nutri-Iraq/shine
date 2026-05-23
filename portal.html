@@ -348,10 +348,12 @@ function showDashboard(){
   loadWAConfig();
   checkReminders();
   setTimeout(initPortalRealtime, 2000);
+  markOnline();
   renderRecent();renderReport();renderWeightChart();
 }
 
 function doLogout(){
+  updateOnlineStatus(false);
   localStorage.removeItem('shine_sub');
   localStorage.removeItem('shine_entries');
   ME=null;MY_ENTRIES=[];
@@ -512,6 +514,39 @@ function checkReminders() {
 
 // فحص كل دقيقة
 setInterval(checkReminders, 60*1000);
+
+// ====== تحديث حالة الأون لاين ======
+async function updateOnlineStatus(online) {
+  if(!ME) return;
+  try {
+    await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/subscribers?id=eq.'+ME.id, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        is_online: online,
+        last_seen: new Date().toISOString()
+      })
+    });
+  } catch(e) {}
+}
+
+// تحديث كل دقيقة لما تكون الصفحة مفتوحة
+setInterval(()=>updateOnlineStatus(true), 60*1000);
+
+// أون لاين عند الدخول
+function markOnline() { updateOnlineStatus(true); }
+
+// أوف لاين عند الخروج
+window.addEventListener('beforeunload', ()=>updateOnlineStatus(false));
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden) updateOnlineStatus(false);
+  else updateOnlineStatus(true);
+});
 
 // ====== تحديث فوري من السيرفر ======
 async function initPortalRealtime() {
