@@ -182,7 +182,7 @@ async function api(action,data={}){
 
 async function loadData(){
   try{
-    const H={'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8'};
+    const H={'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk'};
     const [r1,r2]=await Promise.all([
       fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/subscribers?order=created_at.desc&select=*',{headers:H}),
       fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/entries?select=*',{headers:H})
@@ -246,7 +246,7 @@ async function doApprove(){
   const id=document.getElementById('approveSubId').value;
   const pass=document.getElementById('approvePass').value.trim();
   if(!pass){toast('⚠️ أدخلي كلمة سر');return;}
-  const H={'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8','Prefer':'return=minimal'};
+  const H={'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk','Prefer':'return=minimal'};
   await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/subscribers?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({status:'approved',password:pass})});
   const r={ok:true};
   if(r.ok){toast('✅ تم قبول المشتركة — كلمة السر: '+pass);closeApproveModal();await loadData();}
@@ -255,7 +255,7 @@ async function doApprove(){
 
 async function doReject(){
   const id=document.getElementById('approveSubId').value;
-  const H2={'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8','Prefer':'return=minimal'};
+  const H2={'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk','Prefer':'return=minimal'};
   await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/subscribers?id=eq.'+id,{method:'PATCH',headers:H2,body:JSON.stringify({status:'rejected'})});
   const r={ok:true};
   if(r.ok){toast('تم رفض الطلب');closeApproveModal();await loadData();}
@@ -296,7 +296,7 @@ async function saveEntry(){
     snack:document.getElementById('eSnack').value.trim()||null,
     sport:document.getElementById('eSport').value.trim()||null,
   };
-  const r=await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/entries?on_conflict=sub_id,date',{method:'POST',headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8','Prefer':'resolution=merge-duplicates'},body:JSON.stringify(entry)});
+  const r=await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/entries?on_conflict=sub_id,date',{method:'POST',headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk','Prefer':'resolution=merge-duplicates'},body:JSON.stringify(entry)});
   if(r.ok){toast('✅ تم الحفظ');await loadData();openDetail(subId);}
   else toast('⚠️ خطأ في الحفظ');
 }
