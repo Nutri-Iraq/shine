@@ -118,6 +118,9 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
   </div>
 
   <!-- إدخال يومي -->
+  <!-- بانر العداد والـ subtitle — يظهران لكل المشتركات -->
+  <div id="globalBanners" style="padding:0 1rem;"></div>
+
   <div class="page active" id="page-daily">
     <div class="card">
       <!-- إشعار اليوم -->
@@ -349,6 +352,7 @@ function showDashboard(){
   checkReminders();
   setTimeout(initPortalRealtime, 2000);
   markOnline();
+  initBanners();
   renderRecent();renderReport();renderWeightChart();
 }
 
@@ -397,6 +401,65 @@ async function saveEntry(){
       renderRecent();renderReport();renderWeightChart();
     }else toast('⚠️ خطأ في الحفظ');
   }catch(e){toast('⚠️ خطأ في الاتصال');}
+}
+
+// ====== العداد والـ subtitle العامان ======
+async function loadGlobalBanners() {
+  try {
+    const r = await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/settings?key=in.(countdown,subtitle)&select=*', {
+      headers: {
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8'
+      }
+    });
+    const data = await r.json();
+    let countdownHTML = '', subtitleHTML = '';
+
+    data.forEach(row => {
+      if(row.key === 'countdown') {
+        const p = JSON.parse(row.value);
+        const total = parseInt(p.days);
+        const startMs = new Date(p.start).setHours(0,0,0,0);
+        const todayMs = new Date().setHours(0,0,0,0);
+        const elapsed = Math.floor((todayMs - startMs) / 86400000);
+        const remaining = Math.max(0, total - elapsed);
+        let grad, emoji, label;
+        if(remaining <= 0) {
+          grad='linear-gradient(135deg,#7c3aed,#a78bfa)'; emoji='🎉'; label='انتهى العداد!';
+        } else if(remaining <= 7) {
+          grad='linear-gradient(135deg,#dc2626,#f97316)'; emoji='🔥'; label='الأيام الأخيرة!';
+        } else if(remaining <= Math.round(total * 0.3)) {
+          grad='linear-gradient(135deg,#d97706,#f59e0b)'; emoji='⚡'; label='اقتربت النهاية';
+        } else {
+          grad='linear-gradient(135deg,#e8496a,#f472b6)'; emoji='⏳'; label='استمري!';
+        }
+        countdownHTML = `
+          <div style="background:${grad};border-radius:18px;padding:1rem 1.4rem;margin-bottom:0.8rem;color:white;position:relative;overflow:hidden;">
+            <div style="position:absolute;left:-10px;top:-10px;font-size:5rem;opacity:0.08;pointer-events:none;">⏳</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+              <div>
+                <div style="font-size:0.7rem;opacity:0.85;font-weight:700;margin-bottom:0.1rem;">${emoji} ${label}</div>
+                <div style="font-size:2.6rem;font-weight:900;font-family:'Courier New',monospace;letter-spacing:2px;">${remaining} يوم</div>
+                <div style="font-size:0.68rem;opacity:0.75;margin-top:0.1rem;">اليوم ${Math.min(elapsed+1,total)} من ${total}</div>
+              </div>
+              <div style="text-align:center;background:rgba(255,255,255,0.15);border-radius:12px;padding:0.5rem 0.9rem;">
+                <div style="font-size:1.4rem;font-weight:900;">${Math.max(0,Math.round(Math.max(0,elapsed)/total*100))}%</div>
+                <div style="font-size:0.62rem;opacity:0.8;">مضى</div>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      if(row.key === 'subtitle') {
+        subtitleHTML = `
+          <div style="background:linear-gradient(135deg,rgba(232,73,106,0.08),rgba(244,114,182,0.05));border:1.5px solid rgba(232,73,106,0.2);border-radius:14px;padding:0.85rem 1.1rem;margin-bottom:0.8rem;text-align:center;">
+            <div style="font-size:0.95rem;font-weight:800;color:var(--rose);line-height:1.5;">${row.value}</div>
+          </div>`;
+      }
+    });
+
+    document.getElementById('globalBanners').innerHTML = subtitleHTML + countdownHTML;
+  } catch(e) {}
 }
 
 // إعدادات واتساب من السيرفر
@@ -550,6 +613,9 @@ setInterval(()=>updateOnlineStatus(true), 60*1000);
 
 // أون لاين عند الدخول
 function markOnline() { updateOnlineStatus(true); }
+
+// استدعاء العداد والـ subtitle عند الدخول
+function initBanners() { loadGlobalBanners(); setInterval(loadGlobalBanners, 5*60*1000); }
 
 // أوف لاين عند الخروج
 window.addEventListener('beforeunload', ()=>updateOnlineStatus(false));
