@@ -64,7 +64,7 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
       <div style="font-size:0.88rem;color:var(--muted);line-height:1.7;margin-bottom:1.5rem;">
         تابعي صفحتنا على إنستغرام<br>ثم ارجعي واضغطي <strong style="color:white;">تابعتني ✅</strong>
       </div>
-      <a href="https://www.instagram.com/shine_nutrition" target="_blank" onclick="window._followClicked=true"
+      <a href="https://www.instagram.com/shine__sahar?igsh=MXZtMmZwbTQ0MGVoYQ%3D%3D&utm_source=qr" target="_blank" onclick="window._followClicked=true"
         style="display:block;padding:0.9rem;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:white;border-radius:14px;font-family:'Tajawal',sans-serif;font-size:0.95rem;font-weight:800;text-decoration:none;margin-bottom:0.8rem;">
         🔗 افتحي صفحتنا على إنستغرام
       </a>
@@ -79,11 +79,11 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
     <div class="card">
       <div class="field"><label class="required">الاسم الكامل</label><input type="text" id="name" placeholder="مثال: ريم الأحمدي"><span class="error-msg" id="nameErr">الاسم مطلوب</span></div>
       <div class="grid-2">
-        <div class="field"><label>رقم الهاتف</label><input type="tel" id="phone" placeholder="07xxxxxxxxx"></div>
+        <div class="field"><label class="required">رقم الهاتف</label><input type="tel" id="phone" placeholder="07xxxxxxxxx" maxlength="11"><span class="error-msg" id="phoneErr">رقم الهاتف مطلوب (07XXXXXXXX)</span></div>
         <div class="field"><label>العمر</label><input type="number" id="age" placeholder="28"></div>
       </div>
       <div class="grid-2">
-        <div class="field"><label>الطول (سم)</label><input type="number" id="height" placeholder="165"></div>
+        <div class="field"><label class="required">الطول (سم)</label><input type="number" id="height" placeholder="165" min="100" max="220"><span class="error-msg" id="heightErr">الطول مطلوب</span></div>
         <div class="field"><label class="required">الوزن الحالي (كغ)</label><input type="number" id="weight" placeholder="72" step="0.1"></div>
       </div>
       <div class="field"><label class="required">الوزن المستهدف (كغ)</label><input type="number" id="target" placeholder="65" step="0.1"></div>
@@ -107,7 +107,18 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
   <div class="success-screen" id="successScreen">
     <div class="success-icon">🎉</div>
     <div class="success-title">تم استلام طلبكِ!</div>
-    <div class="success-msg">شكراً <span id="successName"></span> 💕<br><br>سيتم التواصل معكِ خلال 24 ساعة ✨</div>
+    <div class="success-msg">
+        شكراً <span id="successName"></span> 💕<br><br>
+        سيتم التواصل معكِ على واتساب خلال 24 ساعة ✨<br><br>
+        <div style="background:rgba(232,73,106,0.08);border:1px solid rgba(232,73,106,0.2);border-radius:14px;padding:1rem;margin-top:1rem;text-align:right;">
+          <div style="font-size:0.8rem;font-weight:800;color:var(--rose);margin-bottom:0.5rem;">📋 الخطوات القادمة</div>
+          <div style="font-size:0.82rem;line-height:2;">
+            1️⃣ انتظري التواصل على واتساب<br>
+            2️⃣ ستصلك كلمة سر لبوابتك الخاصة<br>
+            3️⃣ سجّلي وجباتك يومياً وتابعي تقدمك ✨
+          </div>
+        </div>
+      </div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -140,12 +151,32 @@ async function submitForm(){
   const name=document.getElementById('name').value.trim();
   const weight=document.getElementById('weight').value;
   const target=document.getElementById('target').value;
-  if(!name){document.getElementById('nameErr').style.display='block';return;}
+  if(!name){document.getElementById('nameErr').style.display='block';document.getElementById('name').focus();return;}
   document.getElementById('nameErr').style.display='none';
+
+  // تحقق الهاتف العراقي
+  const phone = document.getElementById('phone').value.trim();
+  const phoneRgx = /^07[3-9]\d{8}$/;
+  if(!phone){document.getElementById('phoneErr').textContent='رقم الهاتف مطلوب';document.getElementById('phoneErr').style.display='block';document.getElementById('phone').focus();return;}
+  if(!phoneRgx.test(phone)){document.getElementById('phoneErr').textContent='صيغة غير صحيحة — مثال: 07801234567';document.getElementById('phoneErr').style.display='block';document.getElementById('phone').focus();return;}
+  document.getElementById('phoneErr').style.display='none';
+
+  // تحقق الطول
+  const height = parseFloat(document.getElementById('height').value);
+  if(!height||height<100||height>220){document.getElementById('heightErr').style.display='block';document.getElementById('height').focus();return;}
+  document.getElementById('heightErr').style.display='none';
+
   if(!weight||!target){showToast('⚠️ الوزن الحالي والمستهدف مطلوبان');return;}
+
+  // منطقية الوزن
+  const w=parseFloat(weight), t=parseFloat(target);
+  if(w<30||w>250){showToast('⚠️ الوزن الحالي يبدو غير صحيح');return;}
+  if(t<30||t>250){showToast('⚠️ الوزن المستهدف يبدو غير صحيح');return;}
+  if(selectedProg==='تنحيف' && t>=w){showToast('⚠️ الوزن المستهدف يجب أن يكون أقل من الحالي للتنحيف');return;}
+  if(selectedProg==='تسمين' && t<=w){showToast('⚠️ الوزن المستهدف يجب أن يكون أكثر من الحالي للتسمين');return;}
   const btn=document.getElementById('submitBtn');
   btn.disabled=true;btn.textContent='⏳ جاري الإرسال...';
-  const data={name,phone:document.getElementById('phone').value.trim()||null,age:parseInt(document.getElementById('age').value)||null,height:parseFloat(document.getElementById('height').value)||null,weight:parseFloat(weight),target:parseFloat(target),program:selectedProg,notes:document.getElementById('notes').value.trim()||null,date:new Date().toISOString().split('T')[0]};
+  const data={name,phone:phone,age:parseInt(document.getElementById('age').value)||null,height:parseFloat(document.getElementById('height').value)||null,weight:parseFloat(weight),target:parseFloat(target),program:selectedProg,notes:document.getElementById('notes').value.trim()||null,date:new Date().toISOString().split('T')[0]};
   try{
     const r=await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/subscribers',{method:'POST',headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8','Prefer':'return=minimal'},body:JSON.stringify(data)});
     if(r.status===201||r.ok){
