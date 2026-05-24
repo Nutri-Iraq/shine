@@ -412,14 +412,24 @@ async function loadWAConfig() {
       WA_CONFIG = JSON.parse(data[0].value);
     }
   } catch(e) {}
-  // أظهر أو أخفِ زر واتساب
+
+  // تحديد ظهور زر الواتساب حسب الإعدادات الجديدة
   const waBtn = document.getElementById('waTabBtn');
-  if(waBtn) {
-    if(WA_CONFIG.enabled) {
-      waBtn.style.display = '';
-    } else {
-      waBtn.style.display = 'none';
-    }
+  if(!waBtn) return;
+
+  const mode = WA_CONFIG.mode; // 'all' | 'none' | 'custom'
+
+  if(mode === 'none') {
+    // لا أحد يرى الزر
+    waBtn.style.display = 'none';
+  } else if(mode === 'custom') {
+    // فقط المشتركات المحددات
+    const ids = WA_CONFIG.custom_ids || [];
+    waBtn.style.display = (ME && ids.includes(ME.id)) ? '' : 'none';
+  } else {
+    // 'all' أو الوضع القديم (enabled: true)
+    const show = WA_CONFIG.mode ? true : (WA_CONFIG.enabled !== false);
+    waBtn.style.display = show ? '' : 'none';
   }
 }
 

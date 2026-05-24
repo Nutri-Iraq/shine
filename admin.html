@@ -110,28 +110,53 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
     <!-- تفاصيل مشتركة -->
     <div id="subDetail" class="sub-detail">
-      <div class="section-title" id="detailTitle"></div>
-      <div class="entry-form">
-        <div style="font-size:0.82rem;font-weight:800;color:var(--rose);margin-bottom:0.7rem;">➕ إضافة إدخال يدوي</div>
-        <input type="hidden" id="activeSubId">
-        <div class="form-grid">
-          <div class="fii"><label>التاريخ</label><input type="date" id="eDate"></div>
-          <div class="fii"><label>الوزن (كغ)</label><input type="number" id="eWeight" step="0.1"></div>
-          <div class="fii"><label>الماء (لتر)</label><input type="number" id="eWater" step="0.1"></div>
-          <div class="fii"><label>الالتزام</label><select id="eCommit"><option value="ممتاز">ممتاز</option><option value="جيد">جيد</option><option value="متوسط">متوسط</option><option value="ضعيف">ضعيف</option></select></div>
-          <div class="fii"><label>الفطور</label><input type="text" id="eBreakfast"></div>
-          <div class="fii"><label>الغداء</label><input type="text" id="eLunch"></div>
-          <div class="fii"><label>العشاء</label><input type="text" id="eDinner"></div>
-          <div class="fii"><label>السناك</label><input type="text" id="eSnack"></div>
-          <div class="fii"><label>النشاط</label><input type="text" id="eSport"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+        <div class="section-title" id="detailTitle" style="margin-bottom:0;"></div>
+        <button class="btn-sm btn-outline" onclick="document.getElementById('subDetail').style.display='none'">✕ إغلاق</button>
+      </div>
+      <div id="subDetailContent"></div>
+    </div>
+
+    <!-- إعدادات الواتساب -->
+    <div class="section-title" style="margin-top:1.5rem;">💬 إعدادات زر الواتساب</div>
+    <div class="table-wrap" style="padding:1.2rem;">
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+
+        <div class="fii">
+          <label>رقم الواتساب (مع رمز الدولة، بدون +)</label>
+          <input type="text" id="waPhone" placeholder="9647832080324" style="max-width:280px;">
         </div>
-        <div style="margin-top:0.7rem;">
-          <button class="btn-sm btn-primary" onclick="saveEntry()" style="padding:0.6rem 1.2rem;">💾 حفظ</button>
+
+        <div>
+          <div style="font-size:0.75rem;color:var(--muted);font-weight:700;margin-bottom:0.6rem;">من يرى الزر؟</div>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;">
+            <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-size:0.88rem;">
+              <input type="radio" name="waMode" value="all" id="waModeAll" style="accent-color:var(--rose);width:16px;height:16px;">
+              الكل — كل المشتركات ترى الزر
+            </label>
+            <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-size:0.88rem;">
+              <input type="radio" name="waMode" value="none" id="waModeNone" style="accent-color:var(--rose);width:16px;height:16px;">
+              لا أحد — الزر مخفي عند الجميع
+            </label>
+            <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-size:0.88rem;">
+              <input type="radio" name="waMode" value="custom" id="waModeCustom" style="accent-color:var(--rose);width:16px;height:16px;">
+              مشتركات محددات فقط
+            </label>
+          </div>
+        </div>
+
+        <!-- قائمة المشتركات عند اختيار "محددات" -->
+        <div id="waCustomList" style="display:none;background:rgba(232,73,106,0.04);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+          <div style="font-size:0.75rem;color:var(--muted);font-weight:700;margin-bottom:0.7rem;">اختاري المشتركات اللي تظهر عندهن الزر:</div>
+          <div id="waSubsList" style="display:flex;flex-direction:column;gap:0.5rem;max-height:260px;overflow-y:auto;"></div>
+        </div>
+
+        <div>
+          <button class="btn-sm btn-primary" onclick="saveWASettings()" style="padding:0.65rem 1.4rem;font-size:0.88rem;">💾 حفظ إعدادات الواتساب</button>
         </div>
       </div>
-      <div style="margin-top:1rem;font-size:0.82rem;font-weight:800;color:var(--muted);">📋 سجل الإدخالات</div>
-      <div class="entries-list" id="entriesList"></div>
     </div>
+
   </div>
 </div>
 
@@ -165,6 +190,7 @@ function checkPass(){
     document.getElementById('lockScreen').style.display='none';
     document.getElementById('dashboard').style.display='block';
     loadData();
+    loadWASettings();
   }else{
     document.getElementById('lockErr').style.display='block';
     document.getElementById('passInput').value='';
@@ -193,6 +219,7 @@ async function loadData(){
     renderStats();
     renderPending();
     renderApproved();
+    renderWASubsList(); // تحديث قائمة المشتركات في إعدادات الواتساب
   }catch(e){console.error(e);toast('⚠️ خطأ في التحميل: '+e.message);}
 }
 
@@ -264,41 +291,118 @@ async function doReject(){
 function openDetail(subId){
   selectedSubId=subId;
   const sub=allSubs.find(s=>s.id===subId);
-  document.getElementById('activeSubId').value=subId;
-  document.getElementById('eDate').value=new Date().toISOString().split('T')[0];
-  document.getElementById('detailTitle').textContent=`👤 ${sub.name} — ${sub.weight} كغ ← ${sub.target} كغ`;
-  const entries=allEntries.filter(e=>e.sub_id===subId).sort((a,b)=>b.date.localeCompare(a.date));
-  const colors={ممتاز:'badge-green',جيد:'badge-blue',متوسط:'badge-yellow',ضعيف:'badge-red'};
-  document.getElementById('entriesList').innerHTML=entries.length?entries.map(e=>`
-    <div class="entry-row">
-      <span style="color:var(--muted);min-width:75px;">${fmtDate(e.date)}</span>
-      ${e.weight?`<span>⚖️ ${e.weight}كغ</span>`:''}
-      ${e.water?`<span>💧 ${e.water}ل</span>`:''}
-      <span class="badge ${colors[e.commit]||''}">${e.commit||'—'}</span>
-      ${e.sport?`<span>🏃 ${e.sport}</span>`:''}
-    </div>`).join(''):'<div style="text-align:center;color:var(--muted);padding:1rem;font-size:0.82rem;">لا توجد إدخالات</div>';
+  document.getElementById('detailTitle').textContent=`👤 ${sub.name}`;
+
+  const rows = [
+    {icon:'📛', label:'الاسم الكامل',     val: sub.name},
+    {icon:'📱', label:'رقم الهاتف',       val: sub.phone, dir:'ltr'},
+    {icon:'🎂', label:'العمر',            val: sub.age ? sub.age+' سنة' : null},
+    {icon:'📏', label:'الطول',            val: sub.height ? sub.height+' سم' : null},
+    {icon:'⚖️', label:'الوزن الحالي',     val: sub.weight ? sub.weight+' كغ' : null},
+    {icon:'🎯', label:'الوزن المستهدف',   val: sub.target ? sub.target+' كغ' : null},
+    {icon:'🏃', label:'نوع البرنامج',     val: sub.program},
+    {icon:'📅', label:'تاريخ التسجيل',    val: fmtDate(sub.date || (sub.created_at||'').split('T')[0])},
+    {icon:'📝', label:'ملاحظات',          val: sub.notes},
+  ];
+
+  const content = rows
+    .filter(r => r.val)
+    .map(r => `
+      <div style="display:flex;gap:0.7rem;align-items:flex-start;padding:0.55rem 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+        <span style="font-size:1rem;min-width:1.4rem;">${r.icon}</span>
+        <span style="font-size:0.72rem;color:var(--muted);font-weight:700;min-width:110px;padding-top:1px;">${r.label}</span>
+        <span style="font-size:0.88rem;font-weight:700;${r.dir?'direction:ltr;text-align:right;':''}">${r.val}</span>
+      </div>`).join('');
+
+  document.getElementById('subDetailContent').innerHTML = `
+    <div style="background:rgba(255,255,255,0.02);border-radius:12px;padding:0.3rem 0.8rem;">
+      ${content}
+    </div>`;
+
   const d=document.getElementById('subDetail');
   d.style.display='block';
   d.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-async function saveEntry(){
-  const subId=document.getElementById('activeSubId').value;
-  const date=document.getElementById('eDate').value;
-  if(!subId||!date){toast('⚠️ حدث خطأ');return;}
-  const entry={sub_id:subId,date,
-    weight:parseFloat(document.getElementById('eWeight').value)||null,
-    water:parseFloat(document.getElementById('eWater').value)||null,
-    commit:document.getElementById('eCommit').value,
-    breakfast:document.getElementById('eBreakfast').value.trim()||null,
-    lunch:document.getElementById('eLunch').value.trim()||null,
-    dinner:document.getElementById('eDinner').value.trim()||null,
-    snack:document.getElementById('eSnack').value.trim()||null,
-    sport:document.getElementById('eSport').value.trim()||null,
+
+
+// ====== إعدادات الواتساب ======
+let WA_SETTINGS = { phone: '9647832080324', mode: 'all', custom_ids: [] };
+
+// تحديث ظهور قائمة المشتركات
+document.querySelectorAll('input[name="waMode"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('waCustomList').style.display =
+      r.value === 'custom' ? 'block' : 'none';
+  });
+});
+
+async function loadWASettings() {
+  try {
+    const H = { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk' };
+    const r = await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/settings?key=eq.wa_config&select=value', { headers: H });
+    const data = await r.json();
+    if (data && data[0] && data[0].value) {
+      WA_SETTINGS = JSON.parse(data[0].value);
+    }
+  } catch(e) {}
+  renderWAForm();
+}
+
+function renderWAForm() {
+  document.getElementById('waPhone').value = WA_SETTINGS.phone || '';
+  const mode = WA_SETTINGS.mode || 'all';
+  const radio = document.getElementById('waMode' + mode.charAt(0).toUpperCase() + mode.slice(1));
+  if (radio) radio.checked = true;
+  document.getElementById('waCustomList').style.display = mode === 'custom' ? 'block' : 'none';
+  renderWASubsList();
+}
+
+function renderWASubsList() {
+  const approved = allSubs.filter(s => s.status === 'approved');
+  const selectedIds = WA_SETTINGS.custom_ids || [];
+  const wrap = document.getElementById('waSubsList');
+  if (!approved.length) {
+    wrap.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);">لا توجد مشتركات نشطة بعد</div>';
+    return;
+  }
+  wrap.innerHTML = approved.map(s => `
+    <label style="display:flex;align-items:center;gap:0.7rem;cursor:pointer;padding:0.35rem 0.2rem;font-size:0.85rem;">
+      <input type="checkbox" value="${s.id}"
+        ${selectedIds.includes(s.id) ? 'checked' : ''}
+        style="accent-color:var(--rose);width:16px;height:16px;cursor:pointer;">
+      <span>${s.name}</span>
+      <span style="font-size:0.7rem;color:var(--muted);direction:ltr;">${s.phone || ''}</span>
+    </label>`).join('');
+}
+
+async function saveWASettings() {
+  const phone = document.getElementById('waPhone').value.trim();
+  const mode = document.querySelector('input[name="waMode"]:checked')?.value || 'all';
+  const custom_ids = mode === 'custom'
+    ? [...document.querySelectorAll('#waSubsList input[type=checkbox]:checked')].map(c => c.value)
+    : [];
+
+  if (!phone) { toast('⚠️ أدخلي رقم الواتساب'); return; }
+
+  const payload = { phone, mode, custom_ids };
+  const H = {
+    'Content-Type': 'application/json',
+    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk',
+    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk',
+    'Prefer': 'resolution=merge-duplicates'
   };
-  const r=await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/entries?on_conflict=sub_id,date',{method:'POST',headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk','Prefer':'resolution=merge-duplicates'},body:JSON.stringify(entry)});
-  if(r.ok){toast('✅ تم الحفظ');await loadData();openDetail(subId);}
-  else toast('⚠️ خطأ في الحفظ');
+  const r = await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/settings?on_conflict=key', {
+    method: 'POST',
+    headers: H,
+    body: JSON.stringify({ key: 'wa_config', value: JSON.stringify(payload) })
+  });
+  if (r.ok) {
+    WA_SETTINGS = payload;
+    toast('✅ تم حفظ إعدادات الواتساب');
+  } else {
+    toast('⚠️ خطأ في الحفظ');
+  }
 }
 </script>
 </body>
