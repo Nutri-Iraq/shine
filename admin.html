@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Shine — لوحة الكوتش</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--rose:#e8496a;--rose2:#f472b6;--dark:#0f0a0d;--card:#1e1218;--border:rgba(232,73,106,0.18);--text:#f5f0f2;--muted:#a08090;}
@@ -15,13 +16,14 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
 .lock-btn{padding:0.85rem 2rem;background:linear-gradient(135deg,#e8496a,#f472b6);color:white;border:none;border-radius:14px;font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;}
 .lock-err{color:#f87171;font-size:0.82rem;display:none;}
 #dashboard{display:none;}
-.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:0.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:0.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:0.5rem;}
 .brand{font-family:'Playfair Display',serif;font-size:1.3rem;background:linear-gradient(135deg,#e8496a,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .btn-sm{padding:0.45rem 0.9rem;border-radius:10px;font-family:'Tajawal',sans-serif;font-size:0.8rem;font-weight:700;cursor:pointer;border:none;}
 .btn-primary{background:linear-gradient(135deg,#e8496a,#f472b6);color:white;}
 .btn-green{background:rgba(34,197,94,0.2);color:#22c55e;border:1px solid rgba(34,197,94,0.3);}
 .btn-red{background:rgba(232,73,106,0.15);color:#f87171;border:1px solid rgba(232,73,106,0.3);}
 .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--muted);}
+.btn-yellow{background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);}
 .main{padding:1.5rem;max-width:1100px;margin:0 auto;}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.8rem;margin-bottom:1.5rem;}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:1rem;text-align:center;}
@@ -42,31 +44,38 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .badge-blue{background:rgba(59,130,246,0.15);color:#60a5fa;}
 .badge-yellow{background:rgba(245,158,11,0.15);color:#fbbf24;}
 .badge-red{background:rgba(232,73,106,0.15);color:#f87171;}
-
-/* موافقة */
-.approve-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center;padding:1rem;}
-.approve-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.5rem;max-width:380px;width:100%;}
+/* online dot */
+.dot-online{display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;margin-left:5px;vertical-align:middle;}
+.dot-offline{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4b5563;margin-left:5px;vertical-align:middle;}
+/* بحث */
+.search-bar{display:flex;gap:0.6rem;margin-bottom:1rem;align-items:center;}
+.search-input{flex:1;padding:0.6rem 1rem;background:rgba(255,255,255,0.05);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.88rem;outline:none;max-width:320px;}
+.search-input:focus{border-color:var(--rose);}
+/* modal عام */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:200;align-items:center;justify-content:center;padding:1rem;}
+.modal-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.5rem;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;}
 .modal-title{font-weight:800;font-size:1rem;color:var(--rose);margin-bottom:1rem;}
 .fi{display:flex;flex-direction:column;gap:0.3rem;margin-bottom:0.8rem;}
 .fi label{font-size:0.75rem;color:var(--muted);font-weight:700;}
-.fi input{padding:0.65rem 0.9rem;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.9rem;outline:none;}
-.fi input:focus{border-color:var(--rose);}
-
+.fi input,.fi select,.fi textarea{padding:0.65rem 0.9rem;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.9rem;outline:none;}
+.fi input:focus,.fi select:focus,.fi textarea:focus{border-color:var(--rose);}
+.fi select option{background:#1a0f14;}
+.fi textarea{resize:vertical;min-height:80px;}
 /* تفاصيل */
 .sub-detail{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:1.2rem;margin-bottom:1rem;display:none;}
-.entry-form{background:rgba(232,73,106,0.04);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-top:0.8rem;}
-.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0.6rem;}
 .fii{display:flex;flex-direction:column;gap:0.25rem;}
 .fii label{font-size:0.68rem;color:var(--muted);font-weight:700;}
 .fii input,.fii select{padding:0.5rem 0.7rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.82rem;outline:none;}
 .fii select option{background:#1a0f14;}
-.entries-list{display:flex;flex-direction:column;gap:0.5rem;margin-top:0.8rem;}
-.entry-row{background:rgba(255,255,255,0.03);border-radius:10px;padding:0.6rem 0.9rem;font-size:0.78rem;display:flex;gap:0.8rem;flex-wrap:wrap;align-items:center;}
+/* رسم الوزن */
+.weight-chart-wrap{background:rgba(255,255,255,0.02);border-radius:14px;padding:1rem;margin-top:0.8rem;}
+/* واتساب */
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.7rem 1.2rem;font-size:0.85rem;font-weight:700;z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
 .toast.show{transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
+
 <div id="lockScreen">
   <div style="font-size:3rem;">🔐</div>
   <div style="font-family:'Playfair Display',serif;font-size:1.8rem;background:linear-gradient(135deg,#e8496a,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">SHINE Admin</div>
@@ -78,17 +87,21 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 <div id="dashboard">
   <div class="topbar">
     <div class="brand">✨ SHINE Admin</div>
-    <div style="display:flex;gap:0.7rem;align-items:center;">
+    <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;">
       <button class="btn-sm btn-outline" onclick="loadData()">🔄 تحديث</button>
-      <button class="btn-sm btn-primary" onclick="window.open('index.html','_blank')">📱 صفحة التسجيل</button>
-      <button class="btn-sm btn-primary" onclick="window.open('portal.html','_blank')">👤 بوابة المشتركة</button>
+      <button class="btn-sm btn-yellow" onclick="exportExcel()">📤 Excel</button>
+      <button class="btn-sm btn-primary" onclick="window.open('index.html','_blank')">📱 التسجيل</button>
+      <button class="btn-sm btn-primary" onclick="window.open('portal.html','_blank')">👤 البوابة</button>
     </div>
   </div>
+
   <div class="main">
+    <!-- إحصائيات -->
     <div class="stats-grid" id="statsGrid">
       <div class="stat-card"><div class="stat-num" id="statTotal">—</div><div class="stat-label">إجمالي المشتركات</div></div>
       <div class="stat-card"><div class="stat-num" id="statPending">—</div><div class="stat-label">طلبات بالانتظار</div></div>
       <div class="stat-card"><div class="stat-num" id="statApproved">—</div><div class="stat-label">مشتركات نشطة</div></div>
+      <div class="stat-card"><div class="stat-num" id="statOnline">—</div><div class="stat-label">أون لاين الحين</div></div>
       <div class="stat-card"><div class="stat-num" id="statToday">—</div><div class="stat-label">سجّلن اليوم</div></div>
     </div>
 
@@ -102,31 +115,43 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     </div>
 
     <!-- المشتركات النشطة -->
-    <div class="section-title">✅ المشتركات النشطات</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.8rem;">
+      <div class="section-title" style="margin-bottom:0;">✅ المشتركات النشطات</div>
+      <div class="search-bar" style="margin-bottom:0;">
+        <input class="search-input" id="searchInput" placeholder="🔍 بحث بالاسم أو الهاتف..." oninput="renderApproved()">
+      </div>
+    </div>
     <div class="table-wrap">
-      <table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>الوزن</th><th>الهدف</th><th>البرنامج</th><th>الانضمام</th><th>الإدخالات</th><th>إجراء</th></tr></thead>
-      <tbody id="approvedTable"><tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--muted);">⏳ جاري التحميل...</td></tr></tbody></table>
+      <table><thead><tr><th>#</th><th>الحالة</th><th>الاسم</th><th>الهاتف</th><th>الوزن</th><th>الهدف</th><th>البرنامج</th><th>الانضمام</th><th>الإدخالات</th><th>إجراء</th></tr></thead>
+      <tbody id="approvedTable"><tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--muted);">⏳ جاري التحميل...</td></tr></tbody></table>
     </div>
 
     <!-- تفاصيل مشتركة -->
     <div id="subDetail" class="sub-detail">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
         <div class="section-title" id="detailTitle" style="margin-bottom:0;"></div>
-        <button class="btn-sm btn-outline" onclick="document.getElementById('subDetail').style.display='none'">✕ إغلاق</button>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+          <button class="btn-sm btn-yellow" onclick="openEditModal()">✏️ تعديل</button>
+          <button class="btn-sm btn-green" onclick="openNoteModal()">💬 ملاحظة</button>
+          <button class="btn-sm btn-outline" onclick="document.getElementById('subDetail').style.display='none'">✕ إغلاق</button>
+        </div>
       </div>
       <div id="subDetailContent"></div>
+      <!-- رسم الوزن -->
+      <div class="weight-chart-wrap" id="weightChartWrap" style="display:none;">
+        <div style="font-size:0.8rem;font-weight:800;color:var(--muted);margin-bottom:0.6rem;">📊 منحنى الوزن</div>
+        <div style="position:relative;height:180px;"><canvas id="adminWeightChart"></canvas></div>
+      </div>
     </div>
 
     <!-- إعدادات الواتساب -->
     <div class="section-title" style="margin-top:1.5rem;">💬 إعدادات زر الواتساب</div>
     <div class="table-wrap" style="padding:1.2rem;">
       <div style="display:flex;flex-direction:column;gap:1rem;">
-
         <div class="fii">
           <label>رقم الواتساب (مع رمز الدولة، بدون +)</label>
           <input type="text" id="waPhone" placeholder="9647832080324" style="max-width:280px;">
         </div>
-
         <div>
           <div style="font-size:0.75rem;color:var(--muted);font-weight:700;margin-bottom:0.6rem;">من يرى الزر؟</div>
           <div style="display:flex;flex-direction:column;gap:0.5rem;">
@@ -144,13 +169,10 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             </label>
           </div>
         </div>
-
-        <!-- قائمة المشتركات عند اختيار "محددات" -->
         <div id="waCustomList" style="display:none;background:rgba(232,73,106,0.04);border:1px solid var(--border);border-radius:12px;padding:1rem;">
           <div style="font-size:0.75rem;color:var(--muted);font-weight:700;margin-bottom:0.7rem;">اختاري المشتركات اللي تظهر عندهن الزر:</div>
           <div id="waSubsList" style="display:flex;flex-direction:column;gap:0.5rem;max-height:260px;overflow-y:auto;"></div>
         </div>
-
         <div>
           <button class="btn-sm btn-primary" onclick="saveWASettings()" style="padding:0.65rem 1.4rem;font-size:0.88rem;">💾 حفظ إعدادات الواتساب</button>
         </div>
@@ -160,21 +182,60 @@ tr:hover td{background:rgba(255,255,255,0.02);}
   </div>
 </div>
 
-<!-- موافقة modal -->
-<div class="approve-modal" id="approveModal">
-  <div class="approve-box">
+<!-- modal الموافقة -->
+<div class="modal" id="approveModal">
+  <div class="modal-box">
     <div class="modal-title">✅ الموافقة على الطلب</div>
     <div id="approveSubName" style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem;"></div>
     <input type="hidden" id="approveSubId">
     <div class="fi">
       <label>كلمة السر للمشتركة</label>
-      <input type="text" id="approvePass" placeholder="مثال: 12345678" id="approvePass">
+      <input type="text" id="approvePass" placeholder="مثال: 12345678">
     </div>
     <div style="font-size:0.72rem;color:var(--muted);margin-bottom:1rem;">سترسلين هذه الكلمة للمشتركة مع رابط بوابتها</div>
     <div style="display:flex;gap:0.7rem;">
       <button class="btn-sm btn-green" onclick="doApprove()" style="flex:1;padding:0.7rem;">✅ موافقة</button>
       <button class="btn-sm btn-red" onclick="doReject()" style="padding:0.7rem 1rem;">❌ رفض</button>
-      <button class="btn-sm btn-outline" onclick="closeApproveModal()" style="padding:0.7rem 1rem;">إلغاء</button>
+      <button class="btn-sm btn-outline" onclick="closeModal('approveModal')" style="padding:0.7rem 1rem;">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- modal تعديل البيانات -->
+<div class="modal" id="editModal">
+  <div class="modal-box">
+    <div class="modal-title">✏️ تعديل بيانات المشتركة</div>
+    <input type="hidden" id="editSubId">
+    <div class="fi"><label>الاسم الكامل</label><input type="text" id="editName"></div>
+    <div class="fi"><label>رقم الهاتف <span style="color:var(--rose);">*</span></label><input type="tel" id="editPhone" style="direction:ltr;" required placeholder="07xxxxxxxxx"></div>
+    <div class="fi"><label>العمر</label><input type="number" id="editAge"></div>
+    <div class="fi"><label>الطول (سم)</label><input type="number" id="editHeight"></div>
+    <div class="fi"><label>الوزن الحالي (كغ)</label><input type="number" id="editWeight" step="0.1"></div>
+    <div class="fi"><label>الوزن المستهدف (كغ)</label><input type="number" id="editTarget" step="0.1"></div>
+    <div class="fi">
+      <label>نوع البرنامج</label>
+      <select id="editProgram">
+        <option>تنحيف</option><option>ثبات</option><option>تسمين</option><option>رياضي</option>
+      </select>
+    </div>
+    <div class="fi"><label>ملاحظات</label><textarea id="editNotes"></textarea></div>
+    <div style="display:flex;gap:0.7rem;margin-top:0.5rem;">
+      <button class="btn-sm btn-primary" onclick="saveEdit()" style="flex:1;padding:0.7rem;">💾 حفظ التعديلات</button>
+      <button class="btn-sm btn-outline" onclick="closeModal('editModal')" style="padding:0.7rem 1rem;">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- modal إرسال ملاحظة -->
+<div class="modal" id="noteModal">
+  <div class="modal-box">
+    <div class="modal-title">💬 إرسال ملاحظة للمشتركة</div>
+    <div id="noteSubName" style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem;"></div>
+    <input type="hidden" id="noteSubId">
+    <div class="fi"><label>الملاحظة</label><textarea id="noteText" placeholder="اكتبي ملاحظتك هنا..." style="min-height:100px;"></textarea></div>
+    <div style="display:flex;gap:0.7rem;margin-top:0.5rem;">
+      <button class="btn-sm btn-primary" onclick="saveNote()" style="flex:1;padding:0.7rem;">📨 إرسال</button>
+      <button class="btn-sm btn-outline" onclick="closeModal('noteModal')" style="padding:0.7rem 1rem;">إلغاء</button>
     </div>
   </div>
 </div>
@@ -183,226 +244,377 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 <script>
 const PASS='shine2026';
-let allSubs=[],allEntries=[],selectedSubId=null;
+const SB_URL='https://laqiqcyiztvpqctxnxvx.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk';
+const H = {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+const HJ = {...H,'Content-Type':'application/json','Prefer':'return=minimal'};
 
+let allSubs=[], allEntries=[], selectedSubId=null;
+
+// ====== دخول ======
 function checkPass(){
   if(document.getElementById('passInput').value===PASS){
     document.getElementById('lockScreen').style.display='none';
     document.getElementById('dashboard').style.display='block';
     loadData();
     loadWASettings();
-  }else{
+    setInterval(loadData, 60000); // تحديث كل دقيقة للأون لاين
+  } else {
     document.getElementById('lockErr').style.display='block';
     document.getElementById('passInput').value='';
   }
 }
 document.getElementById('passInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkPass();});
 
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
-function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`;}
+// ====== أدوات ======
+function toast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function fmtDate(d){if(!d)return'—';const p=d.split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:'—';}
+function closeModal(id){document.getElementById(id).style.display='none';}
 
-async function api(action,data={}){
-  const r=await fetch('unused');
-  return r.json();
-}
-
+// ====== تحميل البيانات ======
 async function loadData(){
   try{
-    const H={'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk'};
     const [r1,r2]=await Promise.all([
-      fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/subscribers?order=created_at.desc&select=*',{headers:H}),
-      fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/entries?select=*',{headers:H})
+      fetch(SB_URL+'/rest/v1/subscribers?order=created_at.desc&select=*',{headers:H}),
+      fetch(SB_URL+'/rest/v1/entries?select=*',{headers:H})
     ]);
     allSubs=await r1.json()||[];
     allEntries=await r2.json()||[];
-    console.log('Subs loaded:',allSubs.length, allSubs.map(s=>s.name+':'+s.status));
     renderStats();
     renderPending();
     renderApproved();
-    renderWASubsList(); // تحديث قائمة المشتركات في إعدادات الواتساب
-  }catch(e){console.error(e);toast('⚠️ خطأ في التحميل: '+e.message);}
+    renderWASubsList();
+    // تحديث التفاصيل المفتوحة
+    if(selectedSubId) refreshDetail();
+  }catch(e){console.error(e);toast('⚠️ خطأ في التحميل');}
 }
 
+// ====== إحصائيات ======
 function renderStats(){
   const today=new Date().toISOString().split('T')[0];
+  const fiveMin=new Date(Date.now()-5*60*1000).toISOString();
   document.getElementById('statTotal').textContent=allSubs.length;
-  document.getElementById('statPending').textContent=allSubs.filter(s=>s.status==='pending').length;
+  document.getElementById('statPending').textContent=allSubs.filter(s=>!s.status||s.status==='pending').length;
   document.getElementById('statApproved').textContent=allSubs.filter(s=>s.status==='approved').length;
+  document.getElementById('statOnline').textContent=allSubs.filter(s=>s.is_online&&s.last_seen&&s.last_seen>fiveMin).length;
   document.getElementById('statToday').textContent=new Set(allEntries.filter(e=>e.date===today).map(e=>e.sub_id)).size;
 }
 
+// ====== طلبات الانتظار ======
 function renderPending(){
   const pending=allSubs.filter(s=>!s.status||s.status==='pending');
-  const tbody=document.getElementById('pendingTable');
   document.getElementById('pendingSection').style.display='block';
-  tbody.innerHTML=pending.length?pending.map((s,i)=>`
+  document.getElementById('pendingTable').innerHTML=pending.length?pending.map((s,i)=>`
     <tr>
       <td>${i+1}</td><td><strong>${s.name}</strong></td>
       <td style="direction:ltr;">${s.phone||'—'}</td>
       <td>${s.weight||'—'} كغ</td><td>${s.target||'—'} كغ</td>
-      <td>${s.program||'—'}</td><td>${fmtDate(s.date)}</td>
+      <td>${s.program||'—'}</td><td>${fmtDate((s.created_at||'').split('T')[0])}</td>
       <td><button class="btn-sm btn-green" onclick="openApproveModal('${s.id}','${s.name.replace(/'/g,"\\'")}')">✅ موافقة / رفض</button></td>
-    </tr>`).join(''):'<tr><td colspan="8" style="text-align:center;padding:1.5rem;color:var(--muted);">لا توجد طلبات بالانتظار</td></tr>';
+    </tr>`).join('')
+  :'<tr><td colspan="8" style="text-align:center;padding:1.5rem;color:var(--muted);">لا توجد طلبات بالانتظار</td></tr>';
 }
 
+// ====== المشتركات النشطة ======
 function renderApproved(){
-  const approved=allSubs.filter(s=>s.status==='approved');
-  const tbody=document.getElementById('approvedTable');
-  tbody.innerHTML=approved.length?approved.map((s,i)=>{
+  const q=(document.getElementById('searchInput')?.value||'').trim().toLowerCase();
+  const fiveMin=new Date(Date.now()-5*60*1000).toISOString();
+  let approved=allSubs.filter(s=>s.status==='approved');
+  if(q) approved=approved.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.phone||'').includes(q));
+  document.getElementById('approvedTable').innerHTML=approved.length?approved.map((s,i)=>{
     const cnt=allEntries.filter(e=>e.sub_id===s.id).length;
+    const online=s.is_online&&s.last_seen&&s.last_seen>fiveMin;
+    const dot=online?`<span class="dot-online" title="أون لاين"></span>`:`<span class="dot-offline" title="أوف لاين"></span>`;
     return `<tr>
-      <td>${i+1}</td><td><strong>${s.name}</strong></td>
+      <td>${i+1}</td>
+      <td>${dot}</td>
+      <td><strong>${s.name}</strong></td>
       <td style="direction:ltr;">${s.phone||'—'}</td>
       <td>${s.weight||'—'} كغ</td><td>${s.target||'—'} كغ</td>
-      <td>${s.program||'—'}</td><td>${fmtDate(s.date)}</td>
+      <td>${s.program||'—'}</td>
+      <td>${fmtDate((s.created_at||'').split('T')[0])}</td>
       <td>${cnt} يوم</td>
-      <td><button class="btn-sm btn-primary" onclick="openDetail('${s.id}')">تفاصيل</button></td>
+      <td style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+        <button class="btn-sm btn-primary" onclick="openDetail('${s.id}')">تفاصيل</button>
+      </td>
     </tr>`;
-  }).join(''):'<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--muted);">لا توجد مشتركات نشطة بعد — وافقي على طلبات الانتظار أعلاه</td></tr>';
+  }).join('')
+  :'<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--muted);">لا توجد نتائج</td></tr>';
 }
 
+// ====== تفاصيل المشتركة ======
+function openDetail(subId){
+  selectedSubId=subId;
+  refreshDetail();
+  const d=document.getElementById('subDetail');
+  d.style.display='block';
+  setTimeout(()=>d.scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
+function refreshDetail(){
+  if(!selectedSubId) return;
+  const sub=allSubs.find(s=>s.id===selectedSubId);
+  if(!sub) return;
+  const fiveMin=new Date(Date.now()-5*60*1000).toISOString();
+  const online=sub.is_online&&sub.last_seen&&sub.last_seen>fiveMin;
+  const onlineBadge=online
+    ?`<span style="font-size:0.7rem;background:rgba(34,197,94,0.15);color:#22c55e;border-radius:999px;padding:0.15rem 0.5rem;font-weight:800;">🟢 أون لاين</span>`
+    :`<span style="font-size:0.7rem;background:rgba(75,85,99,0.2);color:var(--muted);border-radius:999px;padding:0.15rem 0.5rem;font-weight:800;">⚫ أوف لاين</span>`;
+
+  document.getElementById('detailTitle').innerHTML=`👤 ${sub.name} &nbsp;${onlineBadge}`;
+
+  const rows=[
+    {icon:'📛',label:'الاسم الكامل',val:sub.name},
+    {icon:'📱',label:'رقم الهاتف',val:sub.phone,dir:'ltr'},
+    {icon:'🎂',label:'العمر',val:sub.age?sub.age+' سنة':null},
+    {icon:'📏',label:'الطول',val:sub.height?sub.height+' سم':null},
+    {icon:'⚖️',label:'الوزن الحالي',val:sub.weight?sub.weight+' كغ':null},
+    {icon:'🎯',label:'الوزن المستهدف',val:sub.target?sub.target+' كغ':null},
+    {icon:'🏃',label:'نوع البرنامج',val:sub.program},
+    {icon:'📅',label:'تاريخ التسجيل',val:fmtDate((sub.created_at||'').split('T')[0])},
+    {icon:'📝',label:'ملاحظات التسجيل',val:sub.notes},
+    {icon:'🕐',label:'آخر ظهور',val:sub.last_seen?new Date(sub.last_seen).toLocaleString('ar-IQ'):null},
+  ];
+
+  const infoHTML=rows.filter(r=>r.val).map(r=>`
+    <div style="display:flex;gap:0.7rem;align-items:flex-start;padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+      <span style="font-size:1rem;min-width:1.4rem;">${r.icon}</span>
+      <span style="font-size:0.72rem;color:var(--muted);font-weight:700;min-width:120px;padding-top:2px;">${r.label}</span>
+      <span style="font-size:0.88rem;font-weight:700;${r.dir?'direction:ltr;':''}flex:1;">${r.val}</span>
+    </div>`).join('');
+
+  // ملاحظة الكوتش
+  const coachNote=sub.coach_note?`
+    <div style="margin-top:0.8rem;background:rgba(232,73,106,0.06);border:1px solid rgba(232,73,106,0.2);border-radius:12px;padding:0.8rem;">
+      <div style="font-size:0.72rem;color:var(--rose);font-weight:800;margin-bottom:0.3rem;">💬 آخر ملاحظة للكوتش</div>
+      <div style="font-size:0.85rem;line-height:1.6;">${sub.coach_note}</div>
+    </div>`:'';
+
+  document.getElementById('subDetailContent').innerHTML=`
+    <div style="background:rgba(255,255,255,0.02);border-radius:12px;padding:0.3rem 0.8rem;">${infoHTML}</div>
+    ${coachNote}`;
+
+  // رسم الوزن
+  drawWeightChart(selectedSubId);
+}
+
+// ====== رسم منحنى الوزن ======
+function drawWeightChart(subId){
+  const sub=allSubs.find(s=>s.id===subId);
+  const entries=[...allEntries].filter(e=>e.sub_id===subId&&e.weight).sort((a,b)=>a.date.localeCompare(b.date));
+  const wrap=document.getElementById('weightChartWrap');
+  if(!entries.length){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  const canvas=document.getElementById('adminWeightChart');
+  const ctx=canvas.getContext('2d');
+  const W=wrap.offsetWidth-32||400, H=180;
+  canvas.width=W*devicePixelRatio; canvas.height=H*devicePixelRatio;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  const pad={t:16,r:16,b:32,l:44}, w=W-pad.l-pad.r, h=H-pad.t-pad.b;
+  const vals=entries.map(e=>parseFloat(e.weight));
+  const target=parseFloat(sub.target)||0;
+  const all=[...vals,target];
+  const minV=Math.min(...all)-1.5, maxV=Math.max(...all)+1.5;
+  const n=entries.length;
+  const xP=i=>pad.l+(n>1?(i/(n-1))*w:w/2);
+  const yP=v=>pad.t+h-((v-minV)/(maxV-minV))*h;
+  // شبكة
+  ctx.strokeStyle='rgba(232,73,106,0.07)'; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+(i/4)*h; ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+w,y); ctx.stroke();
+    ctx.fillStyle='#9ca3af'; ctx.font='10px Tajawal'; ctx.textAlign='right';
+    ctx.fillText((maxV-(i/4)*(maxV-minV)).toFixed(1),pad.l-5,y+4);
+  }
+  // خط الهدف
+  if(target){
+    const ty=yP(target); ctx.strokeStyle='rgba(245,158,11,0.5)'; ctx.setLineDash([6,4]); ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(pad.l,ty); ctx.lineTo(pad.l+w,ty); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#f59e0b'; ctx.font='bold 9px Tajawal'; ctx.textAlign='left';
+    ctx.fillText('🎯'+target,pad.l+2,ty-3);
+  }
+  // تعبئة
+  const grad=ctx.createLinearGradient(0,pad.t,0,pad.t+h);
+  grad.addColorStop(0,'rgba(232,73,106,0.25)'); grad.addColorStop(1,'rgba(232,73,106,0)');
+  ctx.beginPath(); ctx.moveTo(xP(0),pad.t+h);
+  entries.forEach((_,i)=>ctx.lineTo(xP(i),yP(vals[i])));
+  ctx.lineTo(xP(n-1),pad.t+h); ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+  // خط
+  ctx.strokeStyle='#e8496a'; ctx.lineWidth=2.5; ctx.lineJoin='round';
+  ctx.beginPath(); entries.forEach((_,i)=>{i===0?ctx.moveTo(xP(i),yP(vals[i])):ctx.lineTo(xP(i),yP(vals[i]));});
+  ctx.stroke();
+  // نقاط
+  entries.forEach((_,i)=>{
+    const last=i===n-1;
+    ctx.beginPath(); ctx.arc(xP(i),yP(vals[i]),last?5:3,0,Math.PI*2);
+    ctx.fillStyle=last?'#e8496a':'white'; ctx.fill();
+    ctx.strokeStyle='#e8496a'; ctx.lineWidth=2; ctx.stroke();
+  });
+  // تواريخ
+  const step=Math.max(1,Math.floor(n/5));
+  entries.forEach((e,i)=>{
+    if(i%step===0||i===n-1){
+      ctx.fillStyle='#9ca3af'; ctx.font='9px Tajawal'; ctx.textAlign='center';
+      ctx.fillText(fmtDate(e.date).slice(0,5),xP(i),pad.t+h+14);
+    }
+  });
+}
+
+// ====== modal الموافقة ======
 function openApproveModal(id,name){
   document.getElementById('approveSubId').value=id;
   document.getElementById('approveSubName').textContent='المشتركة: '+name;
   document.getElementById('approvePass').value=Math.random().toString(36).slice(-8);
   document.getElementById('approveModal').style.display='flex';
 }
-function closeApproveModal(){document.getElementById('approveModal').style.display='none';}
 
 async function doApprove(){
   const id=document.getElementById('approveSubId').value;
   const pass=document.getElementById('approvePass').value.trim();
   if(!pass){toast('⚠️ أدخلي كلمة سر');return;}
-  const H={'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk','Prefer':'return=minimal'};
-  await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/subscribers?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({status:'approved',password:pass})});
-  const r={ok:true};
-  if(r.ok){toast('✅ تم قبول المشتركة — كلمة السر: '+pass);closeApproveModal();await loadData();}
+  const r=await fetch(SB_URL+'/rest/v1/subscribers?id=eq.'+id,{method:'PATCH',headers:HJ,body:JSON.stringify({status:'approved',password:pass})});
+  if(r.ok){toast('✅ تم قبول المشتركة — كلمة السر: '+pass,5000);closeModal('approveModal');await loadData();}
   else toast('⚠️ خطأ في الموافقة');
 }
 
 async function doReject(){
   const id=document.getElementById('approveSubId').value;
-  const H2={'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk','Prefer':'return=minimal'};
-  await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/subscribers?id=eq.'+id,{method:'PATCH',headers:H2,body:JSON.stringify({status:'rejected'})});
-  const r={ok:true};
-  if(r.ok){toast('تم رفض الطلب');closeApproveModal();await loadData();}
+  const r=await fetch(SB_URL+'/rest/v1/subscribers?id=eq.'+id,{method:'PATCH',headers:HJ,body:JSON.stringify({status:'rejected'})});
+  if(r.ok){toast('تم رفض الطلب');closeModal('approveModal');await loadData();}
 }
 
-function openDetail(subId){
-  selectedSubId=subId;
-  const sub=allSubs.find(s=>s.id===subId);
-  document.getElementById('detailTitle').textContent=`👤 ${sub.name}`;
-
-  const rows = [
-    {icon:'📛', label:'الاسم الكامل',     val: sub.name},
-    {icon:'📱', label:'رقم الهاتف',       val: sub.phone, dir:'ltr'},
-    {icon:'🎂', label:'العمر',            val: sub.age ? sub.age+' سنة' : null},
-    {icon:'📏', label:'الطول',            val: sub.height ? sub.height+' سم' : null},
-    {icon:'⚖️', label:'الوزن الحالي',     val: sub.weight ? sub.weight+' كغ' : null},
-    {icon:'🎯', label:'الوزن المستهدف',   val: sub.target ? sub.target+' كغ' : null},
-    {icon:'🏃', label:'نوع البرنامج',     val: sub.program},
-    {icon:'📅', label:'تاريخ التسجيل',    val: fmtDate(sub.date || (sub.created_at||'').split('T')[0])},
-    {icon:'📝', label:'ملاحظات',          val: sub.notes},
-  ];
-
-  const content = rows
-    .filter(r => r.val)
-    .map(r => `
-      <div style="display:flex;gap:0.7rem;align-items:flex-start;padding:0.55rem 0;border-bottom:1px solid rgba(255,255,255,0.04);">
-        <span style="font-size:1rem;min-width:1.4rem;">${r.icon}</span>
-        <span style="font-size:0.72rem;color:var(--muted);font-weight:700;min-width:110px;padding-top:1px;">${r.label}</span>
-        <span style="font-size:0.88rem;font-weight:700;${r.dir?'direction:ltr;text-align:right;':''}">${r.val}</span>
-      </div>`).join('');
-
-  document.getElementById('subDetailContent').innerHTML = `
-    <div style="background:rgba(255,255,255,0.02);border-radius:12px;padding:0.3rem 0.8rem;">
-      ${content}
-    </div>`;
-
-  const d=document.getElementById('subDetail');
-  d.style.display='block';
-  d.scrollIntoView({behavior:'smooth',block:'start'});
+// ====== تعديل البيانات ======
+function openEditModal(){
+  if(!selectedSubId) return;
+  const sub=allSubs.find(s=>s.id===selectedSubId);
+  document.getElementById('editSubId').value=sub.id;
+  document.getElementById('editName').value=sub.name||'';
+  document.getElementById('editPhone').value=sub.phone||'';
+  document.getElementById('editAge').value=sub.age||'';
+  document.getElementById('editHeight').value=sub.height||'';
+  document.getElementById('editWeight').value=sub.weight||'';
+  document.getElementById('editTarget').value=sub.target||'';
+  document.getElementById('editProgram').value=sub.program||'تنحيف';
+  document.getElementById('editNotes').value=sub.notes||'';
+  document.getElementById('editModal').style.display='flex';
 }
 
+async function saveEdit(){
+  const id=document.getElementById('editSubId').value;
+  const phone=document.getElementById('editPhone').value.trim();
+  if(!phone){toast('⚠️ رقم الهاتف مطلوب');document.getElementById('editPhone').focus();return;}
+  const payload={
+    name:document.getElementById('editName').value.trim(),
+    phone:phone,
+    age:document.getElementById('editAge').value||null,
+    height:document.getElementById('editHeight').value||null,
+    weight:document.getElementById('editWeight').value||null,
+    target:document.getElementById('editTarget').value||null,
+    program:document.getElementById('editProgram').value,
+    notes:document.getElementById('editNotes').value.trim()||null,
+  };
+  const r=await fetch(SB_URL+'/rest/v1/subscribers?id=eq.'+id,{method:'PATCH',headers:HJ,body:JSON.stringify(payload)});
+  if(r.ok){toast('✅ تم حفظ التعديلات');closeModal('editModal');await loadData();}
+  else toast('⚠️ خطأ في الحفظ');
+}
 
+// ====== إرسال ملاحظة ======
+function openNoteModal(){
+  if(!selectedSubId) return;
+  const sub=allSubs.find(s=>s.id===selectedSubId);
+  document.getElementById('noteSubId').value=sub.id;
+  document.getElementById('noteSubName').textContent='إلى: '+sub.name;
+  document.getElementById('noteText').value=sub.coach_note||'';
+  document.getElementById('noteModal').style.display='flex';
+}
+
+async function saveNote(){
+  const id=document.getElementById('noteSubId').value;
+  const note=document.getElementById('noteText').value.trim();
+  const r=await fetch(SB_URL+'/rest/v1/subscribers?id=eq.'+id,{method:'PATCH',headers:HJ,body:JSON.stringify({coach_note:note})});
+  if(r.ok){toast('✅ تم إرسال الملاحظة');closeModal('noteModal');await loadData();}
+  else toast('⚠️ خطأ في الإرسال');
+}
+
+// ====== تصدير Excel ======
+function exportExcel(){
+  const approved=allSubs.filter(s=>s.status==='approved');
+  if(!approved.length){toast('⚠️ لا توجد مشتركات للتصدير');return;}
+  const rows=approved.map(s=>({
+    'الاسم':s.name||'',
+    'الهاتف':s.phone||'',
+    'العمر':s.age||'',
+    'الطول':s.height||'',
+    'الوزن الحالي':s.weight||'',
+    'الوزن المستهدف':s.target||'',
+    'البرنامج':s.program||'',
+    'تاريخ الانضمام':fmtDate((s.created_at||'').split('T')[0]),
+    'عدد الإدخالات':allEntries.filter(e=>e.sub_id===s.id).length,
+    'ملاحظات':s.notes||'',
+  }));
+  const ws=XLSX.utils.json_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'المشتركات');
+  XLSX.writeFile(wb,'shine_subscribers_'+new Date().toISOString().split('T')[0]+'.xlsx');
+  toast('✅ تم تصدير الملف');
+}
 
 // ====== إعدادات الواتساب ======
-let WA_SETTINGS = { phone: '9647832080324', mode: 'all', custom_ids: [] };
+let WA_SETTINGS={phone:'9647832080324',mode:'all',custom_ids:[]};
 
-// تحديث ظهور قائمة المشتركات
-document.querySelectorAll('input[name="waMode"]').forEach(r => {
-  r.addEventListener('change', () => {
-    document.getElementById('waCustomList').style.display =
-      r.value === 'custom' ? 'block' : 'none';
+document.querySelectorAll('input[name="waMode"]').forEach(r=>{
+  r.addEventListener('change',()=>{
+    document.getElementById('waCustomList').style.display=r.value==='custom'?'block':'none';
   });
 });
 
-async function loadWASettings() {
-  try {
-    const H = { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk' };
-    const r = await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/settings?key=eq.wa_config&select=value', { headers: H });
-    const data = await r.json();
-    if (data && data[0] && data[0].value) {
-      WA_SETTINGS = JSON.parse(data[0].value);
-    }
-  } catch(e) {}
+async function loadWASettings(){
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/settings?key=eq.wa_config&select=value',{headers:H});
+    const data=await r.json();
+    if(data&&data[0]&&data[0].value) WA_SETTINGS=JSON.parse(data[0].value);
+  }catch(e){}
   renderWAForm();
 }
 
-function renderWAForm() {
-  document.getElementById('waPhone').value = WA_SETTINGS.phone || '';
-  const mode = WA_SETTINGS.mode || 'all';
-  const radio = document.getElementById('waMode' + mode.charAt(0).toUpperCase() + mode.slice(1));
-  if (radio) radio.checked = true;
-  document.getElementById('waCustomList').style.display = mode === 'custom' ? 'block' : 'none';
+function renderWAForm(){
+  document.getElementById('waPhone').value=WA_SETTINGS.phone||'';
+  const mode=WA_SETTINGS.mode||'all';
+  const radio=document.getElementById('waMode'+mode.charAt(0).toUpperCase()+mode.slice(1));
+  if(radio) radio.checked=true;
+  document.getElementById('waCustomList').style.display=mode==='custom'?'block':'none';
   renderWASubsList();
 }
 
-function renderWASubsList() {
-  const approved = allSubs.filter(s => s.status === 'approved');
-  const selectedIds = WA_SETTINGS.custom_ids || [];
-  const wrap = document.getElementById('waSubsList');
-  if (!approved.length) {
-    wrap.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);">لا توجد مشتركات نشطة بعد</div>';
-    return;
-  }
-  wrap.innerHTML = approved.map(s => `
+function renderWASubsList(){
+  const approved=allSubs.filter(s=>s.status==='approved');
+  const selectedIds=WA_SETTINGS.custom_ids||[];
+  const wrap=document.getElementById('waSubsList');
+  if(!wrap) return;
+  wrap.innerHTML=approved.length?approved.map(s=>`
     <label style="display:flex;align-items:center;gap:0.7rem;cursor:pointer;padding:0.35rem 0.2rem;font-size:0.85rem;">
-      <input type="checkbox" value="${s.id}"
-        ${selectedIds.includes(s.id) ? 'checked' : ''}
+      <input type="checkbox" value="${s.id}" ${selectedIds.includes(s.id)?'checked':''}
         style="accent-color:var(--rose);width:16px;height:16px;cursor:pointer;">
       <span>${s.name}</span>
-      <span style="font-size:0.7rem;color:var(--muted);direction:ltr;">${s.phone || ''}</span>
-    </label>`).join('');
+      <span style="font-size:0.7rem;color:var(--muted);direction:ltr;">${s.phone||''}</span>
+    </label>`).join('')
+  :'<div style="font-size:0.8rem;color:var(--muted);">لا توجد مشتركات نشطة بعد</div>';
 }
 
-async function saveWASettings() {
-  const phone = document.getElementById('waPhone').value.trim();
-  const mode = document.querySelector('input[name="waMode"]:checked')?.value || 'all';
-  const custom_ids = mode === 'custom'
-    ? [...document.querySelectorAll('#waSubsList input[type=checkbox]:checked')].map(c => c.value)
-    : [];
-
-  if (!phone) { toast('⚠️ أدخلي رقم الواتساب'); return; }
-
-  const payload = { phone, mode, custom_ids };
-  const H = {
-    'Content-Type': 'application/json',
-    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk',
-    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk',
-    'Prefer': 'resolution=merge-duplicates'
-  };
-  const r = await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/settings?on_conflict=key', {
-    method: 'POST',
-    headers: H,
-    body: JSON.stringify({ key: 'wa_config', value: JSON.stringify(payload) })
+async function saveWASettings(){
+  const phone=document.getElementById('waPhone').value.trim();
+  const mode=document.querySelector('input[name="waMode"]:checked')?.value||'all';
+  const custom_ids=mode==='custom'
+    ?[...document.querySelectorAll('#waSubsList input[type=checkbox]:checked')].map(c=>c.value):[];
+  if(!phone){toast('⚠️ أدخلي رقم الواتساب');return;}
+  const payload={phone,mode,custom_ids};
+  const r=await fetch(SB_URL+'/rest/v1/settings?on_conflict=key',{
+    method:'POST',
+    headers:{...HJ,'Prefer':'resolution=merge-duplicates'},
+    body:JSON.stringify({key:'wa_config',value:JSON.stringify(payload)})
   });
-  if (r.ok) {
-    WA_SETTINGS = payload;
-    toast('✅ تم حفظ إعدادات الواتساب');
-  } else {
-    toast('⚠️ خطأ في الحفظ');
-  }
+  if(r.ok){WA_SETTINGS=payload;toast('✅ تم حفظ إعدادات الواتساب');}
+  else toast('⚠️ خطأ في الحفظ');
 }
 </script>
 </body>
