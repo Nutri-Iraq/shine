@@ -827,6 +827,67 @@ function sendBroadcast() {
   toast('📱 فُتحت ' + notLogged.length + ' نافذة واتساب');
 }
 
+// ====== إعدادات الصيام ======
+let FAST_SETTINGS = { mode: 'all', custom_ids: [] };
+
+// event listeners للـ radio
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('input[name="fastMode"]').forEach(r => {
+    r.addEventListener('change', () => {
+      const show = r.value === 'custom';
+      document.getElementById('fastCustomList').style.display = show ? 'block' : 'none';
+      if(show) renderFastSubsList();
+    });
+  });
+});
+
+async function loadFastSettings() {
+  try {
+    const r = await fetch(SB_URL+'/rest/v1/settings?key=eq.fast_config&select=value', {headers:H});
+    const data = await r.json();
+    if(data?.[0]?.value) FAST_SETTINGS = JSON.parse(data[0].value);
+  } catch(e) {}
+  renderFastForm();
+}
+
+function renderFastForm() {
+  const mode = FAST_SETTINGS.mode || 'all';
+  const radio = document.getElementById('fastMode' + mode.charAt(0).toUpperCase() + mode.slice(1));
+  if(radio) radio.checked = true;
+  const show = mode === 'custom';
+  document.getElementById('fastCustomList').style.display = show ? 'block' : 'none';
+  renderFastSubsList();
+}
+
+function renderFastSubsList() {
+  const approved = allSubs.filter(s => s.status === 'approved');
+  const selectedIds = FAST_SETTINGS.custom_ids || [];
+  const wrap = document.getElementById('fastSubsList');
+  if(!wrap) return;
+  wrap.innerHTML = approved.length ? approved.map(s => `
+    <label style="display:flex;align-items:center;gap:0.7rem;cursor:pointer;padding:0.35rem 0.2rem;font-size:0.85rem;">
+      <input type="checkbox" value="${s.id}" ${selectedIds.includes(s.id) ? 'checked' : ''}
+        style="accent-color:var(--rose);width:16px;height:16px;cursor:pointer;">
+      <span>${s.name}</span>
+      <span style="font-size:0.7rem;color:var(--muted);direction:ltr;">${s.phone||''}</span>
+    </label>`).join('')
+  : '<div style="font-size:0.8rem;color:var(--muted);">لا توجد مشتركات نشطة</div>';
+}
+
+async function saveFastSettings() {
+  const mode = document.querySelector('input[name="fastMode"]:checked')?.value || 'all';
+  const custom_ids = mode === 'custom'
+    ? [...document.querySelectorAll('#fastSubsList input[type=checkbox]:checked')].map(c => c.value) : [];
+  const payload = { mode, custom_ids };
+  const r = await fetch(SB_URL+'/rest/v1/settings?on_conflict=key', {
+    method: 'POST',
+    headers: {...HJ, 'Prefer': 'resolution=merge-duplicates'},
+    body: JSON.stringify({ key: 'fast_config', value: JSON.stringify(payload) })
+  });
+  if(r.ok) { FAST_SETTINGS = payload; toast('✅ تم حفظ إعدادات الصيام'); }
+  else toast('⚠️ خطأ في الحفظ');
+}
+
 </script>
 
 <!-- modal الخطة الأسبوعية -->
