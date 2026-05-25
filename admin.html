@@ -133,6 +133,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
           <button class="btn-sm btn-yellow" onclick="openEditModal()">✏️ تعديل</button>
           <button class="btn-sm btn-green" onclick="openNoteModal()">💬 ملاحظة</button>
+          <button class="btn-sm btn-blue" onclick="openPlanModal()" style="background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3);">📅 خطة أسبوعية</button>
           <button class="btn-sm btn-outline" onclick="document.getElementById('subDetail').style.display='none'">✕ إغلاق</button>
         </div>
       </div>
@@ -617,5 +618,28 @@ async function saveWASettings(){
   else toast('⚠️ خطأ في الحفظ');
 }
 </script>
+
+<!-- modal الخطة الأسبوعية -->
+<div class="modal" id="planModal">
+  <div class="modal-box" style="max-width:500px;">
+    <div class="modal-title">📅 الخطة الأسبوعية</div>
+    <div id="planSubName" style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem;"></div>
+    <input type="hidden" id="planSubId">
+    <div style="max-height:55vh;overflow-y:auto;padding-left:4px;">
+        <div class="fi"><label>الأحد</label><textarea id="planDay0" rows="2" placeholder="مثال: فطور: بيض + خضار..."></textarea></div>
+        <div class="fi"><label>الإثنين</label><textarea id="planDay1" rows="2" placeholder="مثال: فطور: بيض + خضار..."></textarea></div>
+        <div class="fi"><label>الثلاثاء</label><textarea id="planDay2" rows="2" placeholder="مثال: فطور: بيض + خضار..."></textarea></div>
+        <div class="fi"><label>الأربعاء</label><textarea id="planDay3" rows="2" placeholder="مثال: فطور: بيض + خضار..."></textarea></div>
+        <div class="fi"><label>الخميس</label><textarea id="planDay4" rows="2" placeholder="مثال: فطور: بيض + خضار..."></textarea></div>
+        <div class="fi"><label>الجمعة</label><textarea id="planDay5" rows="2" placeholder="مثال: فطور: بيض + خضار..."></textarea></div>
+        <div class="fi"><label>السبت</label><textarea id="planDay6" rows="2" placeholder="مثال: فطور: بيض + خضار..."></textarea></div>
+    </div>
+    <div style="display:flex;gap:0.7rem;margin-top:1rem;">
+      <button class="btn-sm btn-primary" onclick="savePlan()" style="flex:1;padding:0.7rem;">💾 حفظ الخطة</button>
+      <button class="btn-sm btn-outline" onclick="closeModal('planModal')" style="padding:0.7rem 1rem;">إلغاء</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

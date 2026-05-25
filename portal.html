@@ -70,6 +70,34 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
 
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.7rem 1.3rem;font-size:0.85rem;font-weight:700;z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
 .toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ملاحظات الكوتش */
+.coach-note-card{background:linear-gradient(135deg,rgba(232,73,106,0.08),rgba(244,114,182,0.04));border:1.5px solid rgba(232,73,106,0.25);border-radius:16px;padding:1rem 1.2rem;margin-bottom:1rem;animation:noteIn .4s ease both;}
+@keyframes noteIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.coach-note-label{font-size:0.68rem;font-weight:800;color:var(--rose);margin-bottom:0.4rem;display:flex;align-items:center;gap:0.4rem;}
+.coach-note-text{font-size:0.88rem;line-height:1.7;color:var(--text);}
+
+/* شريط التقدم */
+.progress-wrap{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1rem 1.2rem;margin-bottom:1rem;}
+.progress-label{display:flex;justify-content:space-between;font-size:0.75rem;font-weight:800;margin-bottom:0.6rem;}
+.progress-track{height:12px;background:rgba(255,255,255,0.07);border-radius:999px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#e8496a,#f472b6);transition:width 1s cubic-bezier(.34,1.56,.64,1);}
+.progress-stats{display:flex;justify-content:space-between;margin-top:0.5rem;font-size:0.7rem;color:var(--muted);}
+
+/* نظام النقاط */
+.points-badge{display:inline-flex;align-items:center;gap:0.35rem;background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(252,211,77,0.1));border:1.5px solid rgba(245,158,11,0.3);border-radius:999px;padding:0.3rem 0.8rem;font-size:0.78rem;font-weight:900;color:#f59e0b;}
+.points-card{background:var(--card);border:1px solid rgba(245,158,11,0.2);border-radius:16px;padding:1rem;margin-bottom:1rem;text-align:center;}
+.points-num{font-size:2.4rem;font-weight:900;background:linear-gradient(135deg,#f59e0b,#fcd34d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+/* صورة الوجبة */
+.photo-upload-area{border:2px dashed rgba(232,73,106,0.3);border-radius:14px;padding:1.2rem;text-align:center;cursor:pointer;transition:all .2s;margin-top:0.7rem;}
+.photo-upload-area:hover{border-color:var(--rose);background:rgba(232,73,106,0.04);}
+.photo-preview{width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-top:0.7rem;display:none;}
+
+/* خطة أسبوعية */
+.weekly-day{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:0.8rem;margin-bottom:0.6rem;}
+.weekly-day-name{font-size:0.75rem;font-weight:800;color:var(--rose);margin-bottom:0.3rem;}
+.weekly-day-text{font-size:0.82rem;line-height:1.6;color:var(--text);}
 </style>
 </head>
 <body>
@@ -113,6 +141,8 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
     <button class="tab active" onclick="switchTab('daily')">🍽️ وجباتي</button>
     <button class="tab" onclick="switchTab('report')">📊 تقريري</button>
     <button class="tab" onclick="switchTab('weight')">⚖️ منحنى الوزن</button>
+    <button class="tab" onclick="switchTab('plan')">📅 خطتي</button>
+    <button class="tab" onclick="switchTab('points')">🏆 نقاطي</button>
     <button class="tab" onclick="switchTab('reminders')">🔔 تذكيراتي</button>
     <button id="waTabBtn" class="tab" onclick="openWhatsApp()" style="background:linear-gradient(135deg,#25d366,#128c7e);color:white;border-color:transparent;">💬 تواصلي مع الكوتش</button>
   </div>
@@ -120,6 +150,32 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
   <!-- إدخال يومي -->
   <!-- بانر العداد والـ subtitle — يظهران لكل المشتركات -->
   <div id="globalBanners" style="padding:0 1rem;"></div>
+
+  <!-- ملاحظة الكوتش — تظهر إذا موجودة -->
+  <div id="coachNoteWrap" style="padding:0 1rem;display:none;">
+    <div class="coach-note-card">
+      <div class="coach-note-label">💬 رسالة من كوتشك</div>
+      <div class="coach-note-text" id="coachNoteText"></div>
+    </div>
+  </div>
+
+  <!-- شريط تقدم الوزن -->
+  <div id="progressWrap" style="padding:0 1rem;display:none;">
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>🎯 تقدمي نحو الهدف</span>
+        <span id="progressPct" style="color:var(--rose);">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+      <div class="progress-stats">
+        <span id="progressStart"></span>
+        <span id="progressCurrent"></span>
+        <span id="progressTarget"></span>
+      </div>
+    </div>
+  </div>
 
   <div class="page active" id="page-daily">
     <div class="card">
@@ -154,6 +210,19 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
         <label>📝 ملاحظات</label>
         <textarea id="eNotes" placeholder="أي ملاحظة للكوتش..."></textarea>
       </div>
+
+      <!-- رفع صورة الوجبة -->
+      <div style="margin-top:0.5rem;">
+        <div style="font-size:0.72rem;color:var(--muted);font-weight:700;margin-bottom:0.4rem;">📸 صورة وجبتك (اختياري)</div>
+        <div class="photo-upload-area" onclick="document.getElementById('photoInput').click()">
+          <div style="font-size:1.5rem;margin-bottom:0.3rem;">📷</div>
+          <div style="font-size:0.78rem;color:var(--muted);">اضغطي لرفع صورة</div>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="previewPhoto(this)">
+        <img id="photoPreview" class="photo-preview">
+        <div id="photoName" style="font-size:0.72rem;color:var(--muted);margin-top:0.3rem;display:none;"></div>
+      </div>
+
       <button class="save-btn" onclick="saveEntry()">💾 إرسال للكوتش</button>
     </div>
 
@@ -305,6 +374,51 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
     </div>
     <div class="card" id="weightStats"></div>
   </div>
+
+  <!-- صفحة الخطة الأسبوعية -->
+  <div class="page" id="page-plan">
+    <div class="card" id="weeklyPlanCard">
+      <div class="card-title">📅 خطتي الأسبوعية</div>
+      <div id="weeklyPlanContent">
+        <div style="text-align:center;padding:2rem 1rem;color:var(--muted);">
+          <div style="font-size:2rem;margin-bottom:0.5rem;">📋</div>
+          <div style="font-size:0.85rem;">ما وصلت خطة بعد من الكوتش</div>
+          <div style="font-size:0.75rem;margin-top:0.4rem;opacity:0.7;">تواصلي معها لتحصلين على خطتك ✨</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- صفحة النقاط -->
+  <div class="page" id="page-points">
+    <div class="points-card">
+      <div style="font-size:0.75rem;color:var(--muted);font-weight:700;margin-bottom:0.3rem;">🏆 مجموع نقاطك</div>
+      <div class="points-num" id="totalPoints">0</div>
+      <div style="font-size:0.72rem;color:var(--muted);margin-top:0.3rem;">نقطة</div>
+    </div>
+    <div class="card">
+      <div class="card-title">كيف تكسبين النقاط؟</div>
+      <div style="display:flex;flex-direction:column;gap:0.6rem;font-size:0.82rem;">
+        <div style="display:flex;align-items:center;gap:0.7rem;padding:0.5rem;background:rgba(255,255,255,0.03);border-radius:10px;">
+          <span style="font-size:1.2rem;">🍽️</span><span>تسجيل الوجبات اليومية</span><span style="margin-right:auto;color:#f59e0b;font-weight:800;">+10 نقاط</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.7rem;padding:0.5rem;background:rgba(255,255,255,0.03);border-radius:10px;">
+          <span style="font-size:1.2rem;">💧</span><span>تسجيل الماء</span><span style="margin-right:auto;color:#f59e0b;font-weight:800;">+5 نقاط</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.7rem;padding:0.5rem;background:rgba(255,255,255,0.03);border-radius:10px;">
+          <span style="font-size:1.2rem;">📸</span><span>رفع صورة الوجبة</span><span style="margin-right:auto;color:#f59e0b;font-weight:800;">+5 نقاط</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.7rem;padding:0.5rem;background:rgba(255,255,255,0.03);border-radius:10px;">
+          <span style="font-size:1.2rem;">📅</span><span>7 أيام متتالية</span><span style="margin-right:auto;color:#f59e0b;font-weight:800;">+50 نقطة</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">سجل النقاط اليومي</div>
+      <div id="pointsLog" style="font-size:0.82rem;"></div>
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -354,6 +468,10 @@ function showDashboard(){
   markOnline();
   initBanners();
   renderRecent();renderReport();renderWeightChart();
+  renderCoachNote();
+  renderProgressBar();
+  renderPoints();
+  loadWeeklyPlan();
 }
 
 function doLogout(){
@@ -766,6 +884,159 @@ window.addEventListener('load',()=>{
   const e=localStorage.getItem('shine_entries');
   if(s){ME=JSON.parse(s);MY_ENTRIES=JSON.parse(e||'[]');showDashboard();}
 });
+
+// ====================================================
+// 1. ملاحظات الكوتش
+// ====================================================
+function renderCoachNote() {
+  const note = ME?.coach_note;
+  const wrap = document.getElementById('coachNoteWrap');
+  const txt  = document.getElementById('coachNoteText');
+  if(note && note.trim()) {
+    txt.textContent = note;
+    wrap.style.display = 'block';
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+// ====================================================
+// 2. شريط تقدم الوزن
+// ====================================================
+function renderProgressBar() {
+  const wrap = document.getElementById('progressWrap');
+  if(!ME || !ME.weight || !ME.target) { wrap.style.display='none'; return; }
+
+  const start  = parseFloat(ME.weight);
+  const target = parseFloat(ME.target);
+
+  // أحدث وزن مسجّل
+  const withWeight = MY_ENTRIES.filter(e => e.weight).sort((a,b) => b.date.localeCompare(a.date));
+  const current = withWeight.length ? parseFloat(withWeight[0].weight) : start;
+
+  const totalDiff = Math.abs(target - start);
+  if(totalDiff === 0) { wrap.style.display='none'; return; }
+
+  const done = Math.abs(current - start);
+  const pct  = Math.min(100, Math.max(0, Math.round(done / totalDiff * 100)));
+
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent  = pct + '%';
+  document.getElementById('progressStart').textContent   = 'البداية: ' + start + ' كغ';
+  document.getElementById('progressCurrent').textContent = 'الحالي: ' + current + ' كغ';
+  document.getElementById('progressTarget').textContent  = 'الهدف: ' + target + ' كغ';
+  wrap.style.display = 'block';
+}
+
+// ====================================================
+// 3. رفع صورة الوجبة
+// ====================================================
+let PHOTO_DATA = null;
+
+function previewPhoto(input) {
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    PHOTO_DATA = e.target.result;
+    const img = document.getElementById('photoPreview');
+    img.src = PHOTO_DATA;
+    img.style.display = 'block';
+    const nameEl = document.getElementById('photoName');
+    nameEl.textContent = '📎 ' + file.name;
+    nameEl.style.display = 'block';
+    const area = document.querySelector('.photo-upload-area');
+    area.innerHTML = '<div style="font-size:0.75rem;color:var(--rose);font-weight:700;">✅ تم اختيار الصورة — اضغطي للتغيير</div>';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ====================================================
+// 4. نظام النقاط
+// ====================================================
+function calcPoints() {
+  let total = 0;
+  const log = [];
+
+  MY_ENTRIES.forEach(e => {
+    let dayPts = 0;
+    const hasMeal = e.breakfast || e.lunch || e.dinner || e.snack;
+    if(hasMeal)  { dayPts += 10; }
+    if(e.water)  { dayPts += 5;  }
+    if(e.photo)  { dayPts += 5;  }
+    if(dayPts > 0) {
+      total += dayPts;
+      log.push({ date: e.date, pts: dayPts });
+    }
+  });
+
+  // بونص 7 أيام متتالية
+  const sorted = [...MY_ENTRIES].sort((a,b)=>a.date.localeCompare(b.date));
+  let streak = 1, maxStreak = 1;
+  for(let i=1;i<sorted.length;i++){
+    const d1=new Date(sorted[i-1].date), d2=new Date(sorted[i].date);
+    const diff=(d2-d1)/86400000;
+    if(diff===1){ streak++; if(streak>maxStreak)maxStreak=streak; }
+    else streak=1;
+  }
+  const bonuses = Math.floor(maxStreak / 7);
+  total += bonuses * 50;
+
+  return { total, log: log.reverse().slice(0,14), streak: maxStreak, bonuses };
+}
+
+function renderPoints() {
+  const { total, log, streak, bonuses } = calcPoints();
+  document.getElementById('totalPoints').textContent = total;
+
+  const logEl = document.getElementById('pointsLog');
+  if(!log.length) {
+    logEl.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--muted);font-size:0.82rem;">سجّلي وجباتك اليومية لتبدأ بكسب النقاط ✨</div>';
+    return;
+  }
+  logEl.innerHTML = log.map(l => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+      <span style="color:var(--muted);font-size:0.78rem;">${fmtDate(l.date)}</span>
+      <span class="points-badge">+${l.pts} نقطة</span>
+    </div>`).join('') +
+    (bonuses > 0 ? `<div style="margin-top:0.7rem;padding:0.6rem;background:rgba(245,158,11,0.08);border-radius:10px;font-size:0.78rem;text-align:center;color:#f59e0b;font-weight:700;">🔥 سلسلة ${streak} يوم! بونص: +${bonuses*50} نقطة</div>` : '');
+}
+
+// ====================================================
+// 5. الخطة الأسبوعية من Supabase
+// ====================================================
+const DAYS_AR = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+
+async function loadWeeklyPlan() {
+  const el = document.getElementById('weeklyPlanContent');
+  try {
+    const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8';
+    const r = await fetch(
+      'https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/subscribers?id=eq.'+ME.id+'&select=weekly_plan',
+      { headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON } }
+    );
+    const data = await r.json();
+    const plan = data?.[0]?.weekly_plan;
+
+    if(!plan) {
+      el.innerHTML = `<div style="text-align:center;padding:2rem 1rem;color:var(--muted);">
+        <div style="font-size:2rem;margin-bottom:0.5rem;">📋</div>
+        <div style="font-size:0.85rem;">ما وصلت خطة بعد من الكوتش</div>
+      </div>`;
+      return;
+    }
+
+    const days = typeof plan === 'string' ? JSON.parse(plan) : plan;
+    el.innerHTML = Object.entries(days).map(([day, text]) => `
+      <div class="weekly-day">
+        <div class="weekly-day-name">${day}</div>
+        <div class="weekly-day-text">${text || '<span style="opacity:0.4">يوم راحة</span>'}</div>
+      </div>`).join('');
+  } catch(e) {
+    el.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--muted);font-size:0.82rem;">تعذّر تحميل الخطة</div>';
+  }
+}
+
 </script>
 </body>
 </html>
