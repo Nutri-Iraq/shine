@@ -520,6 +520,7 @@ function showDashboard(){
   renderProgressBar();
   renderPoints();
   loadWeeklyPlan();
+  loadFastConfig();
 }
 
 function doLogout(){
@@ -1200,6 +1201,28 @@ function renderFastingLog(data) {
       <span style="font-weight:800;color:${hrs?'#22c55e':'#f59e0b'};font-size:0.82rem;">${hrs?hrs+' س':'جاري'}</span>
     </div>`;
   }).join('');
+}
+
+
+// ====== إعداد تاب الصيام ======
+async function loadFastConfig() {
+  const tab = document.querySelector('button[onclick*="fasting"]');
+  if(!tab) return;
+  try {
+    const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8';
+    const r = await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/settings?key=eq.fast_config&select=value',
+      { headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON } });
+    const data = await r.json();
+    if(!data?.[0]?.value) { tab.style.display=''; return; }
+    const cfg = JSON.parse(data[0].value);
+    if(cfg.mode === 'none') {
+      tab.style.display = 'none';
+    } else if(cfg.mode === 'custom') {
+      tab.style.display = (cfg.custom_ids || []).includes(ME?.id) ? '' : 'none';
+    } else {
+      tab.style.display = '';
+    }
+  } catch(e) { tab.style.display = ''; }
 }
 
 </script>
