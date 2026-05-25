@@ -101,7 +101,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="stat-card"><div class="stat-num" id="statTotal">—</div><div class="stat-label">إجمالي المشتركات</div></div>
       <div class="stat-card"><div class="stat-num" id="statPending">—</div><div class="stat-label">طلبات بالانتظار</div></div>
       <div class="stat-card"><div class="stat-num" id="statApproved">—</div><div class="stat-label">مشتركات نشطة</div></div>
-      <div class="stat-card"><div class="stat-num" id="statOnline">—</div><div class="stat-label">أون لاين الحين</div></div>
+      <div class="stat-card"><div class="stat-num" id="statOnline">—</div><div class="stat-label">أون لاين الآن</div></div>
       <div class="stat-card"><div class="stat-num" id="statToday">—</div><div class="stat-label">سجّلن اليوم</div></div>
     </div>
 
@@ -386,7 +386,7 @@ function refreshDetail(){
   const fiveMin=new Date(Date.now()-6*1000).toISOString();
   const online=sub.is_online&&sub.last_seen&&sub.last_seen>fiveMin;
   const onlineBadge=online
-    ?`<span style="font-size:0.7rem;background:rgba(34,197,94,0.15);color:#22c55e;border-radius:999px;padding:0.15rem 0.5rem;font-weight:800;">🟢 أون لاين</span>`
+    ?`<span style="font-size:0.7rem;background:rgba(34,197,94,0.15);color:#22c55e;border-radius:999px;padding:0.15rem 0.5rem;font-weight:800;">🟢 أون لاين الآن</span>`
     :`<span style="font-size:0.7rem;background:rgba(75,85,99,0.2);color:var(--muted);border-radius:999px;padding:0.15rem 0.5rem;font-weight:800;">⚫ أوف لاين</span>`;
 
   document.getElementById('detailTitle').innerHTML=`👤 ${sub.name} &nbsp;${onlineBadge}`;
