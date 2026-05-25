@@ -134,6 +134,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <button class="btn-sm btn-yellow" onclick="openEditModal()">✏️ تعديل</button>
           <button class="btn-sm btn-green" onclick="openNoteModal()">💬 ملاحظة</button>
           <button class="btn-sm btn-blue" onclick="openPlanModal()" style="background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3);">📅 خطة أسبوعية</button>
+          <button class="btn-sm" onclick="copyPortalLink()" style="background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3);">🔗 نسخ رابط البوابة</button>
           <button class="btn-sm btn-outline" onclick="document.getElementById('subDetail').style.display='none'">✕ إغلاق</button>
         </div>
       </div>
@@ -401,6 +402,7 @@ function refreshDetail(){
     {icon:'🏃',label:'نوع البرنامج',val:sub.program},
     {icon:'📅',label:'تاريخ التسجيل',val:fmtDate((sub.created_at||'').split('T')[0])},
     {icon:'🔑',label:'كلمة السر',val:sub.password||'—'},
+    {icon:'🔗',label:'رابط البوابة',val:sub.password?`<a href="https://shine.bk-haki00963.workers.dev/portal.html?user=${encodeURIComponent(sub.phone)}&pass=${encodeURIComponent(sub.password)}" target="_blank" style="color:var(--rose);font-size:0.78rem;word-break:break-all;">shine.bk-haki00963.workers.dev/portal.html ↗</a>`:'—',raw:true},
     {icon:'📝',label:'ملاحظات التسجيل',val:sub.notes},
     {icon:'🕐',label:'آخر ظهور',val:sub.last_seen?new Date(sub.last_seen).toLocaleString('ar-IQ'):null},
   ];
@@ -409,7 +411,7 @@ function refreshDetail(){
     <div style="display:flex;gap:0.7rem;align-items:flex-start;padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.04);">
       <span style="font-size:1rem;min-width:1.4rem;">${r.icon}</span>
       <span style="font-size:0.72rem;color:var(--muted);font-weight:700;min-width:120px;padding-top:2px;">${r.label}</span>
-      <span style="font-size:0.88rem;font-weight:700;${r.dir?'direction:ltr;':''}flex:1;">${r.val}</span>
+      <span style="font-size:0.88rem;font-weight:700;${r.dir?'direction:ltr;':''}flex:1;">${r.raw?r.val:r.val}</span>
     </div>`).join('');
 
   // ملاحظة الكوتش
@@ -586,6 +588,17 @@ function exportExcel(){
   XLSX.utils.book_append_sheet(wb,ws,'المشتركات');
   XLSX.writeFile(wb,'shine_subscribers_'+new Date().toISOString().split('T')[0]+'.xlsx');
   toast('✅ تم تصدير الملف');
+}
+
+// ====== رابط البوابة ======
+function copyPortalLink() {
+  if(!selectedSubId) return;
+  const sub = allSubs.find(s => s.id === selectedSubId);
+  if(!sub || !sub.password) { toast('⚠️ المشتركة ما عندها كلمة سر بعد'); return; }
+  const link = 'https://shine.bk-haki00963.workers.dev/portal.html?user=' + encodeURIComponent(sub.phone) + '&pass=' + encodeURIComponent(sub.password);
+  navigator.clipboard.writeText(link).then(() => toast('✅ تم نسخ الرابط — شاركيه مع المشتركة')).catch(() => {
+    prompt('انسخي الرابط:', link);
+  });
 }
 
 // ====== إعدادات الواتساب ======

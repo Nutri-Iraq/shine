@@ -143,6 +143,7 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
     <button class="tab" onclick="switchTab('weight')">⚖️ منحنى الوزن</button>
     <button class="tab" onclick="switchTab('plan')">📅 خطتي</button>
     <button class="tab" onclick="switchTab('points')">🏆 نقاطي</button>
+    <button class="tab" onclick="switchTab('fasting')">🌙 صيامي</button>
     <button class="tab" onclick="switchTab('reminders')">🔔 تذكيراتي</button>
     <button id="waTabBtn" class="tab" onclick="openWhatsApp()" style="background:linear-gradient(135deg,#25d366,#128c7e);color:white;border-color:transparent;">💬 تواصلي مع الكوتش</button>
   </div>
@@ -203,8 +204,29 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
         <input type="text" id="eSnack" placeholder="مثال: مكسرات / فاكهة">
       </div>
       <div class="fi" style="margin-bottom:0.7rem;">
-        <label>💧 الماء (لتر)</label>
-        <input type="number" id="eWater" step="0.5" placeholder="2">
+        <label>💧 الماء اليومي</label>
+        <div style="display:flex;align-items:center;gap:0.8rem;margin-top:0.4rem;">
+          <button type="button" onclick="changeWater(-0.5)" style="width:36px;height:36px;border-radius:50%;background:rgba(232,73,106,0.15);color:var(--rose);border:none;font-size:1.3rem;cursor:pointer;font-weight:900;flex-shrink:0;">−</button>
+          <div style="flex:1;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.4rem;">
+              <span id="waterLabel" style="font-size:1.1rem;font-weight:900;color:#60a5fa;">0 لتر</span>
+              <span style="font-size:0.7rem;color:var(--muted);">الهدف 2.5 لتر</span>
+            </div>
+            <div style="height:16px;background:rgba(255,255,255,0.07);border-radius:999px;overflow:hidden;">
+              <div id="waterFill" style="height:100%;width:0%;background:linear-gradient(90deg,#3b82f6,#60a5fa);border-radius:999px;transition:width .3s ease;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:0.2rem;">
+              <span style="font-size:0.6rem;color:var(--muted);">0</span>
+              <span style="font-size:0.6rem;color:var(--muted);">0.5</span>
+              <span style="font-size:0.6rem;color:var(--muted);">1</span>
+              <span style="font-size:0.6rem;color:var(--muted);">1.5</span>
+              <span style="font-size:0.6rem;color:var(--muted);">2</span>
+              <span style="font-size:0.6rem;color:var(--muted);">2.5+</span>
+            </div>
+          </div>
+          <button type="button" onclick="changeWater(0.5)" style="width:36px;height:36px;border-radius:50%;background:rgba(59,130,246,0.15);color:#60a5fa;border:none;font-size:1.3rem;cursor:pointer;font-weight:900;flex-shrink:0;">+</button>
+        </div>
+        <input type="hidden" id="eWater" value="0">
       </div>
       <div class="fi" style="margin-bottom:0.5rem;">
         <label>📝 ملاحظات</label>
@@ -234,6 +256,22 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
   </div>
 
   <!-- تذكيرات -->
+  <!-- صفحة الصيام -->
+  <div class="page" id="page-fasting">
+    <div class="card">
+      <div class="card-title">🌙 تتبع الصيام</div>
+      <div id="fastingToday" style="text-align:center;padding:1rem 0;"></div>
+      <div style="display:flex;gap:0.7rem;margin-top:0.5rem;">
+        <button onclick="startFast()" id="startFastBtn" class="save-btn" style="margin-top:0;">🌙 بدأت الصيام</button>
+        <button onclick="endFast()" id="endFastBtn" class="save-btn" style="margin-top:0;background:linear-gradient(135deg,#f59e0b,#fcd34d);display:none;">☀️ أفطرت</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 سجل الصيام</div>
+      <div id="fastingLog"></div>
+    </div>
+  </div>
+
   <div class="page" id="page-reminders">
     <div class="card">
       <div class="card-title">🔔 تذكيرات الوجبات</div>
@@ -502,6 +540,11 @@ function switchTab(tab){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   event.target.classList.add('active');
   document.getElementById('page-'+tab).classList.add('active');
+  if(tab==='plan')    loadWeeklyPlan();
+  if(tab==='fasting') loadFasting();
+  if(tab==='points')  renderPoints();
+  if(tab==='weight')  renderWeightChart();
+  if(tab==='report')  renderReport();
 }
 
 async function saveEntry(){
@@ -790,7 +833,7 @@ function onDateChange(date) {
     document.getElementById('eLunch').value     = existing.lunch     || '';
     document.getElementById('eDinner').value    = existing.dinner    || '';
     document.getElementById('eSnack').value     = existing.snack     || '';
-    document.getElementById('eWater').value     = existing.water     || '';
+    setWaterVal(existing.water || 0);
     document.getElementById('eNotes').value     = existing.notes     || '';
   } else {
     // امسح الحقول ليوم جديد
@@ -798,7 +841,7 @@ function onDateChange(date) {
     document.getElementById('eLunch').value     = '';
     document.getElementById('eDinner').value    = '';
     document.getElementById('eSnack').value     = '';
-    document.getElementById('eWater').value     = '';
+    setWaterVal(0);
     document.getElementById('eNotes').value     = '';
   }
 }
@@ -1047,6 +1090,116 @@ async function loadWeeklyPlan() {
   } catch(e) {
     el.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--muted);font-size:0.82rem;">تعذّر تحميل الخطة</div>';
   }
+}
+
+
+// ====================================================
+// مقياس الماء البصري
+// ====================================================
+let waterVal = 0;
+
+function changeWater(delta) {
+  waterVal = Math.max(0, Math.round((waterVal + delta) * 10) / 10);
+  document.getElementById('eWater').value = waterVal || '';
+  const pct = Math.min(100, (waterVal / 2.5) * 100);
+  document.getElementById('waterFill').style.width = pct + '%';
+  const label = document.getElementById('waterLabel');
+  label.textContent = waterVal + ' لتر';
+  label.style.color = waterVal >= 2.5 ? '#22c55e' : waterVal >= 1.5 ? '#60a5fa' : '#f59e0b';
+}
+
+function setWaterVal(v) {
+  waterVal = parseFloat(v) || 0;
+  const pct = Math.min(100, (waterVal / 2.5) * 100);
+  document.getElementById('waterFill').style.width = pct + '%';
+  const label = document.getElementById('waterLabel');
+  label.textContent = waterVal + ' لتر';
+  label.style.color = waterVal >= 2.5 ? '#22c55e' : waterVal >= 1.5 ? '#60a5fa' : '#f59e0b';
+}
+
+// ====================================================
+// تتبع الصيام
+// ====================================================
+const FAST_KEY = () => 'shine_fast_' + (ME?.id||'x');
+
+function loadFasting() {
+  const data = JSON.parse(localStorage.getItem(FAST_KEY()) || '[]');
+  renderFastingLog(data);
+  const today = new Date().toISOString().split('T')[0];
+  const todayFast = data.find(f => f.date === today);
+  renderFastingToday(todayFast);
+}
+
+function renderFastingToday(fast) {
+  const el = document.getElementById('fastingToday');
+  const startBtn = document.getElementById('startFastBtn');
+  const endBtn = document.getElementById('endFastBtn');
+  if(!el) return;
+
+  if(!fast) {
+    el.innerHTML = '<div style="font-size:2.5rem;margin-bottom:0.5rem;">🌙</div><div style="color:var(--muted);font-size:0.85rem;">ما بدأتِ صيامك اليوم</div>';
+    startBtn.style.display = ''; endBtn.style.display = 'none';
+    return;
+  }
+  if(fast.start && !fast.end) {
+    const started = new Date(fast.start);
+    const now = new Date();
+    const hrs = ((now - started) / 3600000).toFixed(1);
+    el.innerHTML = `<div style="font-size:2.5rem;margin-bottom:0.3rem;">⏳</div>
+      <div style="font-size:1.4rem;font-weight:900;color:var(--rose);">${hrs} ساعة</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-top:0.2rem;">بدأ ${started.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'})}</div>`;
+    startBtn.style.display = 'none'; endBtn.style.display = '';
+  } else if(fast.start && fast.end) {
+    const hrs = ((new Date(fast.end) - new Date(fast.start)) / 3600000).toFixed(1);
+    el.innerHTML = `<div style="font-size:2.5rem;margin-bottom:0.3rem;">✅</div>
+      <div style="font-size:1.4rem;font-weight:900;color:#22c55e;">${hrs} ساعة</div>
+      <div style="font-size:0.78rem;color:var(--muted);">أكملتِ صيامك اليوم 🎉</div>`;
+    startBtn.style.display = 'none'; endBtn.style.display = 'none';
+  }
+  // تحديث المدة كل دقيقة
+  if(fast.start && !fast.end) setTimeout(loadFasting, 60000);
+}
+
+function startFast() {
+  const today = new Date().toISOString().split('T')[0];
+  const data = JSON.parse(localStorage.getItem(FAST_KEY()) || '[]');
+  const existing = data.find(f => f.date === today);
+  if(existing) return;
+  data.unshift({ date: today, start: new Date().toISOString() });
+  localStorage.setItem(FAST_KEY(), JSON.stringify(data));
+  loadFasting();
+  toast('🌙 بدأ الصيام!');
+}
+
+function endFast() {
+  const today = new Date().toISOString().split('T')[0];
+  const data = JSON.parse(localStorage.getItem(FAST_KEY()) || '[]');
+  const fast = data.find(f => f.date === today);
+  if(!fast) return;
+  fast.end = new Date().toISOString();
+  const hrs = ((new Date(fast.end) - new Date(fast.start)) / 3600000).toFixed(1);
+  localStorage.setItem(FAST_KEY(), JSON.stringify(data));
+  loadFasting();
+  toast('☀️ أفطرتِ بعد ' + hrs + ' ساعة!');
+}
+
+function renderFastingLog(data) {
+  const el = document.getElementById('fastingLog');
+  if(!el) return;
+  if(!data.length) {
+    el.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--muted);font-size:0.82rem;">ما في سجل صيام بعد</div>';
+    return;
+  }
+  el.innerHTML = data.slice(0,14).map(f => {
+    const hrs = f.end ? ((new Date(f.end)-new Date(f.start))/3600000).toFixed(1) : null;
+    const startT = f.start ? new Date(f.start).toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'}) : '—';
+    const endT = f.end ? new Date(f.end).toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'}) : 'مستمر...';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+      <span style="color:var(--muted);font-size:0.78rem;">${fmtDate(f.date)}</span>
+      <span style="font-size:0.78rem;">${startT} ← ${endT}</span>
+      <span style="font-weight:800;color:${hrs?'#22c55e':'#f59e0b'};font-size:0.82rem;">${hrs?hrs+' س':'جاري'}</span>
+    </div>`;
+  }).join('');
 }
 
 </script>
