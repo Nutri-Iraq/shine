@@ -365,6 +365,16 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
   </div>
 
   <!-- منحنى الوزن -->
+  <!-- تقرير -->
+  <div class="page" id="page-report">
+    <div class="stat-grid" id="reportStats"></div>
+    <div class="card">
+      <div class="card-title">📋 سجل وجباتي</div>
+      <div id="reportEntries"></div>
+    </div>
+  </div>
+
+  <!-- منحنى الوزن -->
   <div class="page" id="page-weight">
     <div class="card">
       <div class="card-title">📉 منحنى وزني</div>
@@ -816,14 +826,16 @@ function renderReport(){
   const loss=(parseFloat(ME.weight)-lastW).toFixed(1);
   const exPct=entries.length?Math.round(entries.filter(e=>e.commit==='ممتاز').length/entries.length*100):0;
   const avgW=entries.filter(e=>e.water).length?(entries.reduce((a,e)=>a+(parseFloat(e.water)||0),0)/entries.filter(e=>e.water).length).toFixed(1):'—';
-  document.getElementById('myStats').innerHTML=[
+  const statsEl = document.getElementById('reportStats') || document.getElementById('myStats');
+  if(statsEl) statsEl.innerHTML=[
     {icon:'⚖️',val:lastW+'كغ',label:'الوزن الحالي',c:'#e8496a'},
     {icon:parseFloat(loss)>0?'📉':'📈',val:(parseFloat(loss)>0?'↓':'↑')+Math.abs(loss)+'كغ',label:'إجمالي التغيير',c:parseFloat(loss)>0?'#22c55e':'#f87171'},
     {icon:'💯',val:exPct+'%',label:'التزام ممتاز',c:'#7c3aed'},
     {icon:'💧',val:avgW+'ل',label:'متوسط الماء',c:'#0284c7'},
   ].map(s=>`<div class="stat"><div style="font-size:1.3rem;">${s.icon}</div><div class="stat-num" style="background:${s.c};-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${s.val}</div><div class="stat-label">${s.label}</div></div>`).join('');
   const colors={ممتاز:'bg',جيد:'bb',متوسط:'by',ضعيف:'br'};
-  document.getElementById('fullLog').innerHTML=entries.length?entries.map(e=>`
+  const logEl = document.getElementById('reportEntries') || document.getElementById('fullLog');
+  if(logEl) logEl.innerHTML=entries.length?entries.map(e=>`
     <div class="entry-item">
       <span style="color:var(--muted);min-width:75px;">${fmtDate(e.date)}</span>
       ${e.weight?`<span>⚖️ ${e.weight}كغ</span>`:''}
