@@ -400,6 +400,7 @@ function refreshDetail(){
     {icon:'🎯',label:'الوزن المستهدف',val:sub.target?sub.target+' كغ':null},
     {icon:'🏃',label:'نوع البرنامج',val:sub.program},
     {icon:'📅',label:'تاريخ التسجيل',val:fmtDate((sub.created_at||'').split('T')[0])},
+    {icon:'🔑',label:'كلمة السر',val:sub.password||'—'},
     {icon:'📝',label:'ملاحظات التسجيل',val:sub.notes},
     {icon:'🕐',label:'آخر ظهور',val:sub.last_seen?new Date(sub.last_seen).toLocaleString('ar-IQ'):null},
   ];
