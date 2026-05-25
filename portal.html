@@ -737,7 +737,7 @@ async function updateOnlineStatus(online) {
 }
 
 // تحديث كل دقيقة لما تكون الصفحة مفتوحة
-setInterval(()=>updateOnlineStatus(true), 60*1000);
+setInterval(()=>updateOnlineStatus(true), 3*1000);
 
 // أون لاين عند الدخول
 function markOnline() { updateOnlineStatus(true); }
