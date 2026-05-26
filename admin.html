@@ -52,7 +52,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .search-input{flex:1;padding:0.6rem 1rem;background:rgba(255,255,255,0.05);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:0.88rem;outline:none;max-width:320px;}
 .search-input:focus{border-color:var(--rose);}
 /* modal عام */
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:200;align-items:center;justify-content:center;padding:1rem;}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;align-items:center;justify-content:center;padding:1rem;}
 .modal-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.5rem;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;}
 .modal-title{font-weight:800;font-size:1rem;color:var(--rose);margin-bottom:1rem;}
 .fi{display:flex;flex-direction:column;gap:0.3rem;margin-bottom:0.8rem;}
@@ -70,11 +70,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 /* رسم الوزن */
 .weight-chart-wrap{background:rgba(255,255,255,0.02);border-radius:14px;padding:1rem;margin-top:0.8rem;}
 /* واتساب */
-.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.7rem 1.2rem;font-size:0.85rem;font-weight:700;z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.7rem 1.2rem;font-size:0.85rem;font-weight:700;z-index:99999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
 .toast.show{transform:translateX(-50%) translateY(0);}
 
 /* نظام الصفحات */
-.admin-page{display:none;padding:1.5rem;max-width:960px;margin:0 auto;animation:pageIn .25s ease;}
+.admin-page{display:none;padding:1.5rem;max-width:960px;margin:0 auto;animation:pageIn .25s ease;position:relative;z-index:1;}
 .admin-page.active{display:block;}
 @keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 /* شاشة البيت */
@@ -286,15 +286,15 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <div style="font-size:0.75rem;color:var(--muted);font-weight:700;margin-bottom:0.6rem;">من يرى تاب الصيام؟</div>
           <div style="display:flex;flex-direction:column;gap:0.5rem;">
             <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-size:0.88rem;">
-              <input type="radio" name="fastMode" value="all" id="fastModeAll" style="accent-color:var(--rose);width:16px;height:16px;">
+              <input type="radio" name="fastMode" value="all" id="fastModeAll" style="accent-color:var(--rose);width:16px;height:16px;" onchange="document.getElementById('fastCustomList').style.display='none'">
               الكل — جميع المشتركات يرون التاب
             </label>
             <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-size:0.88rem;">
-              <input type="radio" name="fastMode" value="none" id="fastModeNone" style="accent-color:var(--rose);width:16px;height:16px;">
+              <input type="radio" name="fastMode" value="none" id="fastModeNone" style="accent-color:var(--rose);width:16px;height:16px;" onchange="document.getElementById('fastCustomList').style.display='none'">
               لا أحد — التاب مخفي عند الجميع
             </label>
             <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-size:0.88rem;">
-              <input type="radio" name="fastMode" value="custom" id="fastModeCustom" style="accent-color:var(--rose);width:16px;height:16px;">
+              <input type="radio" name="fastMode" value="custom" id="fastModeCustom" style="accent-color:var(--rose);width:16px;height:16px;" onchange="document.getElementById('fastCustomList').style.display='block';renderFastSubsList()">
               مشتركات محددات فقط
             </label>
           </div>
@@ -321,15 +321,15 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <div style="font-size:0.75rem;color:var(--muted);font-weight:700;margin-bottom:0.6rem;">من يرى الزر؟</div>
           <div style="display:flex;flex-direction:column;gap:0.5rem;">
             <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-size:0.88rem;">
-              <input type="radio" name="waMode" value="all" id="waModeAll" style="accent-color:var(--rose);width:16px;height:16px;">
+              <input type="radio" name="waMode" value="all" id="waModeAll" style="accent-color:var(--rose);width:16px;height:16px;" onchange="document.getElementById('waCustomList').style.display='none'">
               الكل — كل المشتركات ترى الزر
             </label>
             <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-size:0.88rem;">
-              <input type="radio" name="waMode" value="none" id="waModeNone" style="accent-color:var(--rose);width:16px;height:16px;">
+              <input type="radio" name="waMode" value="none" id="waModeNone" style="accent-color:var(--rose);width:16px;height:16px;" onchange="document.getElementById('waCustomList').style.display='none'">
               لا أحد — الزر مخفي عند الجميع
             </label>
             <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-size:0.88rem;">
-              <input type="radio" name="waMode" value="custom" id="waModeCustom" style="accent-color:var(--rose);width:16px;height:16px;">
+              <input type="radio" name="waMode" value="custom" id="waModeCustom" style="accent-color:var(--rose);width:16px;height:16px;" onchange="document.getElementById('waCustomList').style.display='block';renderWASubsList()">
               مشتركات محددات فقط
             </label>
           </div>
@@ -751,11 +751,7 @@ function copyPortalLink() {
 // ====== إعدادات الواتساب ======
 let WA_SETTINGS={phone:'9647832080324',mode:'all',custom_ids:[]};
 
-document.querySelectorAll('input[name="waMode"]').forEach(r=>{
-  r.addEventListener('change',()=>{
-    document.getElementById('waCustomList').style.display=r.value==='custom'?'block':'none';
-  });
-});
+
 
 async function loadWASettings(){
   try{
@@ -948,7 +944,7 @@ function goPage(pageId) {
   if(page) { page.classList.add('active'); window.scrollTo({top:0,behavior:'smooth'}); }
   if(pageId === 'page-compliance') renderCompliance(complianceDays);
   if(pageId === 'page-broadcast')  { if(allSubs.length) renderNotLogged(); else loadData().then(()=>renderNotLogged()); }
-  if(pageId === 'page-settings')   { loadFastSettings(); loadWASettings(); }
+  if(pageId === 'page-settings')   { setTimeout(()=>{ loadFastSettings(); loadWASettings(); }, 50); }
   if(pageId === 'page-pending')    { if(allSubs.length) renderPending(); else loadData(); }
   if(pageId === 'page-subscribers'){ if(allSubs.length) renderApproved(); else loadData(); }
 }
@@ -956,16 +952,7 @@ function goPage(pageId) {
 // ====== إعدادات الصيام ======
 let FAST_SETTINGS = { mode: 'all', custom_ids: [] };
 
-// event listeners للـ radio
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('input[name="fastMode"]').forEach(r => {
-    r.addEventListener('change', () => {
-      const show = r.value === 'custom';
-      document.getElementById('fastCustomList').style.display = show ? 'block' : 'none';
-      if(show) renderFastSubsList();
-    });
-  });
-});
+// radio buttons تستخدم onchange مباشرة
 
 async function loadFastSettings() {
   try {
