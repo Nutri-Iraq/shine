@@ -73,15 +73,23 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.7rem 1.2rem;font-size:0.85rem;font-weight:700;z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
 .toast.show{transform:translateX(-50%) translateY(0);}
 
-/* Sidebar */
-.layout{display:flex;min-height:calc(100vh - 60px);}
-.sidebar{width:210px;flex-shrink:0;background:var(--card);border-left:1px solid var(--border);padding:1rem 0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;}
-.sidebar-item{display:flex;align-items:center;gap:0.6rem;padding:0.65rem 1.1rem;font-size:0.82rem;font-weight:700;color:var(--muted);cursor:pointer;border-right:3px solid transparent;transition:all .2s;text-decoration:none;}
-.sidebar-item:hover{color:var(--text);background:rgba(232,73,106,0.06);}
-.sidebar-item.active{color:var(--rose);border-right-color:var(--rose);background:rgba(232,73,106,0.08);}
-.sidebar-section{font-size:0.62rem;font-weight:900;color:rgba(160,128,144,0.5);padding:0.8rem 1.1rem 0.3rem;text-transform:uppercase;letter-spacing:1px;}
-.content{flex:1;padding:1.5rem;max-width:900px;}
-@media(max-width:700px){.sidebar{display:none;}.content{padding:1rem;}}
+/* نظام الصفحات */
+.admin-page{display:none;padding:1.5rem;max-width:960px;margin:0 auto;animation:pageIn .25s ease;}
+.admin-page.active{display:block;}
+@keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+/* شاشة البيت */
+.home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-top:1rem;}
+.home-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.4rem 1rem;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.home-card:hover{border-color:var(--rose);transform:translateY(-3px);box-shadow:0 8px 24px rgba(232,73,106,0.15);}
+.home-card-icon{font-size:2rem;margin-bottom:0.5rem;}
+.home-card-title{font-size:0.88rem;font-weight:800;color:var(--text);}
+.home-card-desc{font-size:0.7rem;color:var(--muted);margin-top:0.2rem;}
+.home-card-badge{position:absolute;top:0.6rem;left:0.6rem;background:var(--rose);color:white;border-radius:999px;font-size:0.62rem;font-weight:900;padding:0.15rem 0.5rem;min-width:20px;}
+/* زر رجوع */
+.back-btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.45rem 0.9rem;background:rgba(255,255,255,0.05);border:1.5px solid var(--border);border-radius:10px;color:var(--muted);font-family:'Tajawal',sans-serif;font-size:0.8rem;font-weight:700;cursor:pointer;margin-bottom:1.2rem;transition:all .2s;}
+.back-btn:hover{color:var(--text);border-color:var(--rose);}
+/* page title */
+.page-title{font-size:1.1rem;font-weight:900;color:var(--text);margin-bottom:1.2rem;display:flex;align-items:center;gap:0.5rem;}
 </style>
 </head>
 <body>
@@ -98,6 +106,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
   <div class="topbar">
     <div class="brand">✨ SHINE Admin</div>
     <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;">
+      <button class="btn-sm btn-outline" onclick="goPage('page-home')">🏠 الرئيسية</button>
       <button class="btn-sm btn-outline" onclick="loadData()">🔄 تحديث</button>
       <button class="btn-sm btn-yellow" onclick="exportExcel()">📤 Excel</button>
       <button class="btn-sm btn-primary" onclick="window.open('index.html','_blank')">📱 التسجيل</button>
@@ -105,24 +114,56 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     </div>
   </div>
 
-  <div class="layout">
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <div class="sidebar-section">عام</div>
-      <a class="sidebar-item active" onclick="showSection('statsSection',this)">📊 الإحصائيات</a>
-      <a class="sidebar-item" onclick="showSection('pendingSection',this)">⏳ طلبات الانتظار</a>
-      <a class="sidebar-item" onclick="showSection('approvedSection',this)">✅ المشتركات النشطات</a>
-      <div class="sidebar-section">متابعة</div>
-      <a class="sidebar-item" onclick="showSection('complianceSection',this)">📊 إحصائيات الالتزام</a>
-      <a class="sidebar-item" onclick="showSection('broadcastSection',this)">🔔 واتساب جماعي</a>
-      <div class="sidebar-section">إعدادات</div>
-      <a class="sidebar-item" onclick="showSection('fastSection',this)">🌙 إعدادات الصيام</a>
-      <a class="sidebar-item" onclick="showSection('waSection',this)">💬 إعدادات الواتساب</a>
-    </div>
+  <!-- الصفحات -->
 
-    <!-- المحتوى -->
-    <div class="content">
-    <!-- إحصائيات -->
+  <!-- 🏠 صفحة البيت -->
+  <div class="admin-page active" id="page-home">
+    <div style="max-width:960px;margin:0 auto;padding:1.5rem;">
+      <div style="margin-bottom:1.5rem;">
+        <div style="font-family:'Playfair Display',serif;font-size:1.4rem;background:linear-gradient(135deg,#e8496a,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">مرحباً بك 👋</div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:0.2rem;">اختاري القسم اللي تبين</div>
+      </div>
+      <div class="home-grid">
+        <div class="home-card" onclick="goPage('page-stats')">
+          <div class="home-card-icon">📊</div>
+          <div class="home-card-title">الإحصائيات</div>
+          <div class="home-card-desc">نظرة عامة على المشروع</div>
+        </div>
+        <div class="home-card" onclick="goPage('page-pending')">
+          <div class="home-card-badge" id="badgePending" style="background:#f59e0b;">0</div>
+          <div class="home-card-icon">⏳</div>
+          <div class="home-card-title">طلبات الانتظار</div>
+          <div class="home-card-desc">طلبات تنتظر الموافقة</div>
+        </div>
+        <div class="home-card" onclick="goPage('page-subscribers')">
+          <div class="home-card-icon">✅</div>
+          <div class="home-card-title">المشتركات</div>
+          <div class="home-card-desc">إدارة المشتركات النشطات</div>
+        </div>
+        <div class="home-card" onclick="goPage('page-compliance')">
+          <div class="home-card-icon">📈</div>
+          <div class="home-card-title">الالتزام</div>
+          <div class="home-card-desc">إحصائيات التزام المشتركات</div>
+        </div>
+        <div class="home-card" onclick="goPage('page-broadcast')">
+          <div class="home-card-icon">🔔</div>
+          <div class="home-card-title">واتساب جماعي</div>
+          <div class="home-card-desc">تذكير الغائبات اليوم</div>
+        </div>
+        <div class="home-card" onclick="goPage('page-settings')">
+          <div class="home-card-icon">⚙️</div>
+          <div class="home-card-title">الإعدادات</div>
+          <div class="home-card-desc">واتساب، صيام، عداد</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📊 الإحصائيات -->
+  <div class="admin-page" id="page-stats">
+    <div style="max-width:960px;margin:0 auto;padding:1.5rem;">
+      <button class="back-btn" onclick="goPage('page-home')">← رجوع</button>
+      <div class="page-title">📊 الإحصائيات</div>
     <div id="statsSection">
     <div class="stats-grid" id="statsGrid">
       <div class="stat-card"><div class="stat-num" id="statTotal">—</div><div class="stat-label">إجمالي المشتركات</div></div>
@@ -134,7 +175,14 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     </div><!-- end statsSection -->
 
     <!-- طلبات الانتظار -->
-    <div id="pendingSection" class="admin-section" style="display:none;">
+    </div></div></div><!-- end page-stats -->
+
+  <!-- ⏳ طلبات الانتظار -->
+  <div class="admin-page" id="page-pending">
+    <div style="max-width:960px;margin:0 auto;padding:1.5rem;">
+      <button class="back-btn" onclick="goPage('page-home')">← رجوع</button>
+      <div class="page-title">⏳ طلبات الانتظار</div>
+  <div id="pendingSection">
       <div class="section-title">⏳ طلبات بالانتظار</div>
       <div class="table-wrap">
         <table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>الوزن</th><th>الهدف</th><th>البرنامج</th><th>التاريخ</th><th>إجراء</th></tr></thead>
@@ -143,7 +191,14 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     </div>
 
     <!-- المشتركات النشطة -->
-    <div id="approvedSection" class="admin-section" style="display:none;flex-align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.8rem;">
+  </div></div><!-- end page-pending -->
+
+  <!-- ✅ المشتركات -->
+  <div class="admin-page" id="page-subscribers">
+    <div style="max-width:960px;margin:0 auto;padding:1.5rem;">
+      <button class="back-btn" onclick="goPage('page-home')">← رجوع</button>
+      <div class="page-title">✅ المشتركات النشطات</div>
+    <div id="approvedSection" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.8rem;">
       <div class="section-title" style="margin-bottom:0;">✅ المشتركات النشطات</div>
       <div class="search-bar" style="margin-bottom:0;">
         <input class="search-input" id="searchInput" placeholder="🔍 بحث بالاسم أو الهاتف..." oninput="renderApproved()">
@@ -176,8 +231,14 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
     <!-- إعدادات الواتساب -->
     <!-- إحصائيات الالتزام -->
-    <div id="complianceSection" class="admin-section" style="display:none;">
-    <div class="section-title" style="margin-top:0;">📊 إحصائيات الالتزام</div>
+  </div></div><!-- end page-subscribers -->
+
+  <!-- 📈 الالتزام -->
+  <div class="admin-page" id="page-compliance">
+    <div style="max-width:960px;margin:0 auto;padding:1.5rem;">
+      <button class="back-btn" onclick="goPage('page-home')">← رجوع</button>
+      <div class="page-title">📈 إحصائيات الالتزام</div>
+    <div id="complianceSection">
     <div class="table-wrap" style="padding:1.2rem;margin-bottom:1.5rem;">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">
         <div style="font-size:0.8rem;color:var(--muted);">آخر تحديث: <span id="statsDate" style="color:var(--text);font-weight:700;"></span></div>
@@ -191,8 +252,14 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     </div>
 
     <!-- واتساب جماعي -->
-    <div id="broadcastSection" class="admin-section" style="display:none;">
-    <div class="section-title">🔔 واتساب جماعي للي ما سجّلن</div>
+  </div></div><!-- end page-compliance -->
+
+  <!-- 🔔 واتساب جماعي -->
+  <div class="admin-page" id="page-broadcast">
+    <div style="max-width:960px;margin:0 auto;padding:1.5rem;">
+      <button class="back-btn" onclick="goPage('page-home')">← رجوع</button>
+      <div class="page-title">🔔 واتساب جماعي</div>
+    <div id="broadcastSection">
     <div class="table-wrap" style="padding:1.2rem;margin-bottom:1.5rem;">
       <div style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem;">المشتركات اللي ما سجّلن وجباتهن اليوم:</div>
       <div id="notLoggedList" style="margin-bottom:1rem;"></div>
@@ -204,7 +271,14 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     </div>
 
     <!-- إعدادات الصيام -->
-    <div id="fastSection" class="admin-section" style="display:none;">
+  </div></div><!-- end page-broadcast -->
+
+  <!-- ⚙️ الإعدادات -->
+  <div class="admin-page" id="page-settings">
+    <div style="max-width:960px;margin:0 auto;padding:1.5rem;">
+      <button class="back-btn" onclick="goPage('page-home')">← رجوع</button>
+      <div class="page-title">⚙️ الإعدادات</div>
+    <div id="fastSection">
     <div class="section-title">🌙 إعدادات تتبع الصيام</div>
     <div class="table-wrap" style="padding:1.2rem;margin-bottom:1.5rem;">
       <div style="display:flex;flex-direction:column;gap:1rem;">
@@ -235,8 +309,8 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       </div>
     </div>
 
-    <div id="waSection" class="admin-section" style="display:none;">
-    <div class="section-title">💬 إعدادات زر الواتساب</div>
+    <div id="waSection">
+    <div class="section-title" style="margin-top:1.5rem;">💬 إعدادات زر الواتساب</div>
     <div class="table-wrap" style="padding:1.2rem;">
       <div style="display:flex;flex-direction:column;gap:1rem;">
         <div class="fii">
@@ -270,9 +344,8 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       </div>
     </div>
 
-    </div><!-- end content -->
-  </div><!-- end layout -->
-</div>
+    </div></div><!-- end page-settings -->
+</div><!-- end dashboard -->
 
 <!-- modal الموافقة -->
 <div class="modal" id="approveModal">
@@ -351,8 +424,6 @@ function checkPass(){
     loadData();
     loadWASettings();
     loadFastSettings();
-    // إظهار الإحصائيات افتراضياً
-    setTimeout(()=>showSection('statsSection', document.querySelector('.sidebar-item')), 100);
     setInterval(loadData, 3000); // تحديث كل 15 ثانية للأون لاين
   } else {
     document.getElementById('lockErr').style.display='block';
@@ -390,11 +461,15 @@ async function loadData(){
 function renderStats(){
   const today=new Date().toISOString().split('T')[0];
   const fiveMin=new Date(Date.now()-6*1000).toISOString();
+  const pendingCount=allSubs.filter(s=>!s.status||s.status==='pending').length;
   document.getElementById('statTotal').textContent=allSubs.length;
-  document.getElementById('statPending').textContent=allSubs.filter(s=>!s.status||s.status==='pending').length;
+  document.getElementById('statPending').textContent=pendingCount;
   document.getElementById('statApproved').textContent=allSubs.filter(s=>s.status==='approved').length;
   document.getElementById('statOnline').textContent=allSubs.filter(s=>s.is_online&&s.last_seen&&s.last_seen>fiveMin).length;
   document.getElementById('statToday').textContent=new Set(allEntries.filter(e=>e.date===today).map(e=>e.sub_id)).size;
+  // تحديث badge الانتظار
+  const badge=document.getElementById('badgePending');
+  if(badge){badge.textContent=pendingCount;badge.style.display=pendingCount>0?'block':'none';}
 }
 
 // ====== طلبات الانتظار ======
@@ -863,28 +938,16 @@ function sendBroadcast() {
 }
 
 
-const ALL_SECTIONS = ['statsSection','pendingSection','approvedSection','complianceSection','broadcastSection','fastSection','waSection'];
-
-function showSection(id, el) {
-  // إخفاء كل الأقسام
-  ALL_SECTIONS.forEach(s => {
-    const sec = document.getElementById(s);
-    if(sec) sec.style.display = 'none';
-  });
-  // إظهار القسم المطلوب
-  const target = document.getElementById(id);
-  if(target) {
-    target.style.display = id === 'approvedSection' ? 'block' : 'block';
-    target.scrollIntoView({behavior:'smooth', block:'start'});
-  }
-  // تحديث الـ active
-  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-  if(el) el.classList.add('active');
-  // تحميل البيانات حسب القسم
-  if(id === 'complianceSection') renderCompliance(complianceDays);
-  if(id === 'broadcastSection')  renderNotLogged();
-  if(id === 'fastSection')       { loadFastSettings(); renderFastSubsList(); }
-  if(id === 'waSection')         { loadWASettings(); }
+function goPage(pageId) {
+  // إخفاء كل الصفحات
+  document.querySelectorAll('.admin-page').forEach(p => p.classList.remove('active'));
+  // إظهار الصفحة المطلوبة
+  const page = document.getElementById(pageId);
+  if(page) { page.classList.add('active'); window.scrollTo({top:0,behavior:'smooth'}); }
+  // تحميل بيانات حسب الصفحة
+  if(pageId === 'page-compliance') renderCompliance(complianceDays);
+  if(pageId === 'page-broadcast')  renderNotLogged();
+  if(pageId === 'page-settings')   { loadFastSettings(); loadWASettings(); }
 }
 
 // ====== إعدادات الصيام ======
