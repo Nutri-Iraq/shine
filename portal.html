@@ -541,6 +541,50 @@ function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t
 
 function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`;}
 
+
+// ===== دخول بالـ token =====
+async function loginByToken(token) {
+  const btn = document.getElementById('loginBtn');
+  if(btn) { btn.textContent='⏳ جاري الدخول...'; btn.disabled=true; }
+  try {
+    const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8';
+    const H = { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON };
+
+    // جلب المشتركة بالـ token
+    const r1 = await fetch(
+      'https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/subscribers?token=eq.' + encodeURIComponent(token) + '&status=eq.approved&select=*',
+      { headers: H }
+    );
+    const subs = await r1.json();
+    if(!Array.isArray(subs) || !subs.length) {
+      showErr('الرابط غير صالح أو منتهي الصلاحية');
+      if(btn) { btn.textContent='🔐 دخول'; btn.disabled=false; }
+      return;
+    }
+    const sub = subs[0];
+
+    // جلب الإدخالات
+    const r2 = await fetch(
+      'https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/entries?sub_id=eq.' + sub.id + '&order=date.desc&select=*',
+      { headers: H }
+    );
+    const entries = await r2.json();
+
+    ME = sub;
+    MY_ENTRIES = Array.isArray(entries) ? entries : [];
+    localStorage.setItem('shine_sub', JSON.stringify(ME));
+    localStorage.setItem('shine_entries', JSON.stringify(MY_ENTRIES));
+
+    // نظّف الـ URL من الـ token
+    window.history.replaceState({}, '', window.location.pathname);
+    showDashboard();
+
+  } catch(e) {
+    showErr('خطأ في الاتصال');
+    if(btn) { btn.textContent='🔐 دخول'; btn.disabled=false; }
+  }
+}
+
 async function doLogin(){
   const phone=document.getElementById('loginPhone').value.trim();
   const pass =document.getElementById('loginPass').value.trim();
@@ -1000,9 +1044,16 @@ function renderWeightChart(){
 
 // تحقق من جلسة محفوظة
 window.addEventListener('load',()=>{
-  const s=localStorage.getItem('shine_sub');
-  const e=localStorage.getItem('shine_entries');
-  if(s){ME=JSON.parse(s);MY_ENTRIES=JSON.parse(e||'[]');showDashboard();}
+  // تسجيل دخول تلقائي بالـ token من الرابط
+  const _urlParams = new URLSearchParams(window.location.search);
+  const _token = _urlParams.get('token');
+  if(_token) {
+    loginByToken(_token);
+  } else {
+    const s=localStorage.getItem('shine_sub');
+    const e=localStorage.getItem('shine_entries');
+    if(s){ME=JSON.parse(s);MY_ENTRIES=JSON.parse(e||'[]');showDashboard();}
+  }
 });
 
 // ====================================================
