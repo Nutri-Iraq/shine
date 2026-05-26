@@ -522,6 +522,15 @@ function openDetail(id){
   setTimeout(()=>d.scrollIntoView({behavior:'smooth',block:'start'}),100);
 }
 
+function getPortalLink(sub){
+  if(sub.token){
+    return '<a href="https://shine.bk-haki00963.workers.dev/portal?token='+sub.token+'" target="_blank" style="color:var(--rose);">افتح البوابة ↗</a>';
+  } else if(sub.password){
+    return '<a href="https://shine.bk-haki00963.workers.dev/portal?user='+encodeURIComponent(sub.phone)+'&pass='+encodeURIComponent(sub.password)+'" target="_blank" style="color:var(--rose);">افتح (قديم) ↗</a>';
+  }
+  return '—';
+}
+
 function refreshDetail(){
   if(!selectedSubId) return;
   const sub=allSubs.find(s=>s.id===selectedSubId);
@@ -542,7 +551,7 @@ function refreshDetail(){
     {icon:'🏃',label:'البرنامج',val:sub.program},
     {icon:'📅',label:'تاريخ التسجيل',val:fmtDate((sub.created_at||'').split('T')[0])},
     {icon:'🔑',label:'كلمة السر',val:sub.password||'—'},
-    {icon:'🔗',label:'رابط البوابة',val:sub.token?`<a href="https://shine.bk-haki00963.workers.dev/portal?token=${sub.token}" target="_blank" style="color:var(--rose);">افتح البوابة ↗</a>`:(sub.password?`<a href="https://shine.bk-haki00963.workers.dev/portal?user=${encodeURIComponent(sub.phone)}&pass=${encodeURIComponent(sub.password)}" target="_blank" style="color:var(--rose);">افتح (قديم) ↗</a>`):'—',raw:true},
+    {icon:'🔗',label:'رابط البوابة',val:getPortalLink(sub),raw:true},
     {icon:'📝',label:'ملاحظات',val:sub.notes},
     {icon:'💬',label:'ملاحظة الكوتش',val:sub.coach_note},
     {icon:'🕐',label:'آخر ظهور',val:sub.last_seen?new Date(sub.last_seen).toLocaleString('ar-IQ'):null},
