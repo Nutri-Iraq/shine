@@ -542,7 +542,7 @@ function refreshDetail(){
     {icon:'🏃',label:'البرنامج',val:sub.program},
     {icon:'📅',label:'تاريخ التسجيل',val:fmtDate((sub.created_at||'').split('T')[0])},
     {icon:'🔑',label:'كلمة السر',val:sub.password||'—'},
-    {icon:'🔗',label:'رابط البوابة',val:sub.token?`<a href="https://shine.bk-haki00963.workers.dev/portal.html?token=${sub.token}" target="_blank" style="color:var(--rose);">افتح البوابة ↗</a>`:(sub.password?`<a href="https://shine.bk-haki00963.workers.dev/portal.html?user=${encodeURIComponent(sub.phone)}&pass=${encodeURIComponent(sub.password)}" target="_blank" style="color:var(--rose);">افتح (قديم) ↗</a>`):'—',raw:true},
+    {icon:'🔗',label:'رابط البوابة',val:sub.token?`<a href="https://shine.bk-haki00963.workers.dev/portal?token=${sub.token}" target="_blank" style="color:var(--rose);">افتح البوابة ↗</a>`:(sub.password?`<a href="https://shine.bk-haki00963.workers.dev/portal?user=${encodeURIComponent(sub.phone)}&pass=${encodeURIComponent(sub.password)}" target="_blank" style="color:var(--rose);">افتح (قديم) ↗</a>`):'—',raw:true},
     {icon:'📝',label:'ملاحظات',val:sub.notes},
     {icon:'💬',label:'ملاحظة الكوتش',val:sub.coach_note},
     {icon:'🕐',label:'آخر ظهور',val:sub.last_seen?new Date(sub.last_seen).toLocaleString('ar-IQ'):null},
@@ -614,7 +614,7 @@ async function doApprove(){
   const token=genToken();
   const r=await fetch(SB+'/subscribers?id=eq.'+id,{method:'PATCH',headers:HJ,body:JSON.stringify({status:'approved',password:pass,token:token})});
   if(r.ok){
-    const link='https://shine.bk-haki00963.workers.dev/portal.html?token='+token;
+    const link='https://shine.bk-haki00963.workers.dev/portal?token='+token;
     toast('✅ تم القبول',3000);
     closeModal('approveModal');
     await loadData();
@@ -707,10 +707,10 @@ function copyPortalLink(){
   if(!sub?.token && !sub?.password){toast('⚠️ المشتركة ما عندها رابط بعد');return;}
   let link;
   if(sub.token){
-    link='https://shine.bk-haki00963.workers.dev/portal.html?token='+sub.token;
+    link='https://shine.bk-haki00963.workers.dev/portal?token='+sub.token;
   } else {
     // fallback للمشتركات القديمة
-    link='https://shine.bk-haki00963.workers.dev/portal.html?user='+encodeURIComponent(sub.phone)+'&pass='+encodeURIComponent(sub.password);
+    link='https://shine.bk-haki00963.workers.dev/portal?user='+encodeURIComponent(sub.phone)+'&pass='+encodeURIComponent(sub.password);
   }
   navigator.clipboard.writeText(link).then(()=>toast('✅ تم نسخ الرابط الآمن')).catch(()=>prompt('الرابط:',link));
 }

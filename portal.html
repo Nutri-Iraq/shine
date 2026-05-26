@@ -576,7 +576,7 @@ async function loginByToken(token) {
     localStorage.setItem('shine_entries', JSON.stringify(MY_ENTRIES));
 
     // نظّف الـ URL من الـ token
-    window.history.replaceState({}, '', window.location.pathname);
+    window.history.replaceState({}, '', window.location.pathname + window.location.search.replace(/[?&]token=[^&]*/,'').replace(/^&/,'?'));
     showDashboard();
 
   } catch(e) {
