@@ -72,6 +72,16 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 /* واتساب */
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.7rem 1.2rem;font-size:0.85rem;font-weight:700;z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
 .toast.show{transform:translateX(-50%) translateY(0);}
+
+/* Sidebar */
+.layout{display:flex;min-height:calc(100vh - 60px);}
+.sidebar{width:210px;flex-shrink:0;background:var(--card);border-left:1px solid var(--border);padding:1rem 0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;}
+.sidebar-item{display:flex;align-items:center;gap:0.6rem;padding:0.65rem 1.1rem;font-size:0.82rem;font-weight:700;color:var(--muted);cursor:pointer;border-right:3px solid transparent;transition:all .2s;text-decoration:none;}
+.sidebar-item:hover{color:var(--text);background:rgba(232,73,106,0.06);}
+.sidebar-item.active{color:var(--rose);border-right-color:var(--rose);background:rgba(232,73,106,0.08);}
+.sidebar-section{font-size:0.62rem;font-weight:900;color:rgba(160,128,144,0.5);padding:0.8rem 1.1rem 0.3rem;text-transform:uppercase;letter-spacing:1px;}
+.content{flex:1;padding:1.5rem;max-width:900px;}
+@media(max-width:700px){.sidebar{display:none;}.content{padding:1rem;}}
 </style>
 </head>
 <body>
@@ -95,8 +105,25 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     </div>
   </div>
 
-  <div class="main">
+  <div class="layout">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-section">عام</div>
+      <a class="sidebar-item active" onclick="showSection('statsSection',this)">📊 الإحصائيات</a>
+      <a class="sidebar-item" onclick="showSection('pendingSection',this)">⏳ طلبات الانتظار</a>
+      <a class="sidebar-item" onclick="showSection('approvedSection',this)">✅ المشتركات النشطات</a>
+      <div class="sidebar-section">متابعة</div>
+      <a class="sidebar-item" onclick="showSection('complianceSection',this)">📊 إحصائيات الالتزام</a>
+      <a class="sidebar-item" onclick="showSection('broadcastSection',this)">🔔 واتساب جماعي</a>
+      <div class="sidebar-section">إعدادات</div>
+      <a class="sidebar-item" onclick="showSection('fastSection',this)">🌙 إعدادات الصيام</a>
+      <a class="sidebar-item" onclick="showSection('waSection',this)">💬 إعدادات الواتساب</a>
+    </div>
+
+    <!-- المحتوى -->
+    <div class="content">
     <!-- إحصائيات -->
+    <div id="statsSection">
     <div class="stats-grid" id="statsGrid">
       <div class="stat-card"><div class="stat-num" id="statTotal">—</div><div class="stat-label">إجمالي المشتركات</div></div>
       <div class="stat-card"><div class="stat-num" id="statPending">—</div><div class="stat-label">طلبات بالانتظار</div></div>
@@ -104,9 +131,10 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="stat-card"><div class="stat-num" id="statOnline">—</div><div class="stat-label">أون لاين الآن</div></div>
       <div class="stat-card"><div class="stat-num" id="statToday">—</div><div class="stat-label">سجّلن اليوم</div></div>
     </div>
+    </div><!-- end statsSection -->
 
     <!-- طلبات الانتظار -->
-    <div id="pendingSection">
+    <div id="pendingSection" class="admin-section" style="display:none;">
       <div class="section-title">⏳ طلبات بالانتظار</div>
       <div class="table-wrap">
         <table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>الوزن</th><th>الهدف</th><th>البرنامج</th><th>التاريخ</th><th>إجراء</th></tr></thead>
@@ -115,7 +143,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     </div>
 
     <!-- المشتركات النشطة -->
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.8rem;">
+    <div id="approvedSection" class="admin-section" style="display:none;flex-align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.8rem;">
       <div class="section-title" style="margin-bottom:0;">✅ المشتركات النشطات</div>
       <div class="search-bar" style="margin-bottom:0;">
         <input class="search-input" id="searchInput" placeholder="🔍 بحث بالاسم أو الهاتف..." oninput="renderApproved()">
@@ -148,7 +176,8 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
     <!-- إعدادات الواتساب -->
     <!-- إحصائيات الالتزام -->
-    <div class="section-title" style="margin-top:1.5rem;">📊 إحصائيات الالتزام</div>
+    <div id="complianceSection" class="admin-section" style="display:none;">
+    <div class="section-title" style="margin-top:0;">📊 إحصائيات الالتزام</div>
     <div class="table-wrap" style="padding:1.2rem;margin-bottom:1.5rem;">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">
         <div style="font-size:0.8rem;color:var(--muted);">آخر تحديث: <span id="statsDate" style="color:var(--text);font-weight:700;"></span></div>
@@ -162,6 +191,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     </div>
 
     <!-- واتساب جماعي -->
+    <div id="broadcastSection" class="admin-section" style="display:none;">
     <div class="section-title">🔔 واتساب جماعي للي ما سجّلن</div>
     <div class="table-wrap" style="padding:1.2rem;margin-bottom:1.5rem;">
       <div style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem;">المشتركات اللي ما سجّلن وجباتهن اليوم:</div>
@@ -174,7 +204,8 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     </div>
 
     <!-- إعدادات الصيام -->
-    <div class="section-title" style="margin-top:1.5rem;">🌙 إعدادات تتبع الصيام</div>
+    <div id="fastSection" class="admin-section" style="display:none;">
+    <div class="section-title">🌙 إعدادات تتبع الصيام</div>
     <div class="table-wrap" style="padding:1.2rem;margin-bottom:1.5rem;">
       <div style="display:flex;flex-direction:column;gap:1rem;">
         <div>
@@ -204,7 +235,8 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       </div>
     </div>
 
-    <div class="section-title" style="margin-top:1.5rem;">💬 إعدادات زر الواتساب</div>
+    <div id="waSection" class="admin-section" style="display:none;">
+    <div class="section-title">💬 إعدادات زر الواتساب</div>
     <div class="table-wrap" style="padding:1.2rem;">
       <div style="display:flex;flex-direction:column;gap:1rem;">
         <div class="fii">
@@ -238,7 +270,8 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       </div>
     </div>
 
-  </div>
+    </div><!-- end content -->
+  </div><!-- end layout -->
 </div>
 
 <!-- modal الموافقة -->
@@ -318,6 +351,8 @@ function checkPass(){
     loadData();
     loadWASettings();
     loadFastSettings();
+    // إظهار الإحصائيات افتراضياً
+    setTimeout(()=>showSection('statsSection', document.querySelector('.sidebar-item')), 100);
     setInterval(loadData, 3000); // تحديث كل 15 ثانية للأون لاين
   } else {
     document.getElementById('lockErr').style.display='block';
@@ -825,6 +860,31 @@ function sendBroadcast() {
     }, i * 800);
   });
   toast('📱 فُتحت ' + notLogged.length + ' نافذة واتساب');
+}
+
+
+const ALL_SECTIONS = ['statsSection','pendingSection','approvedSection','complianceSection','broadcastSection','fastSection','waSection'];
+
+function showSection(id, el) {
+  // إخفاء كل الأقسام
+  ALL_SECTIONS.forEach(s => {
+    const sec = document.getElementById(s);
+    if(sec) sec.style.display = 'none';
+  });
+  // إظهار القسم المطلوب
+  const target = document.getElementById(id);
+  if(target) {
+    target.style.display = id === 'approvedSection' ? 'block' : 'block';
+    target.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  // تحديث الـ active
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  if(el) el.classList.add('active');
+  // تحميل البيانات حسب القسم
+  if(id === 'complianceSection') renderCompliance(complianceDays);
+  if(id === 'broadcastSection')  renderNotLogged();
+  if(id === 'fastSection')       { loadFastSettings(); renderFastSubsList(); }
+  if(id === 'waSection')         { loadWASettings(); }
 }
 
 // ====== إعدادات الصيام ======
