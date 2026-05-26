@@ -98,6 +98,19 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
 .weekly-day{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:0.8rem;margin-bottom:0.6rem;}
 .weekly-day-name{font-size:0.75rem;font-weight:800;color:var(--rose);margin-bottom:0.3rem;}
 .weekly-day-text{font-size:0.82rem;line-height:1.6;color:var(--text);}
+
+/* معرض صور الوزن */
+.photo-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.8rem;margin-top:0.8rem;}
+.photo-item{position:relative;border-radius:14px;overflow:hidden;background:rgba(255,255,255,0.03);border:1px solid var(--border);cursor:pointer;}
+.photo-item img{width:100%;height:140px;object-fit:cover;display:block;}
+.photo-item-info{padding:0.4rem 0.6rem;font-size:0.68rem;color:var(--muted);}
+.photo-item-weight{font-weight:800;color:var(--rose);font-size:0.8rem;}
+.photo-upload-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;height:140px;cursor:pointer;border:2px dashed rgba(232,73,106,0.3);border-radius:14px;transition:all .2s;}
+.photo-upload-btn:hover{border-color:var(--rose);background:rgba(232,73,106,0.05);}
+/* lightbox */
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;align-items:center;justify-content:center;flex-direction:column;gap:1rem;}
+.lightbox.show{display:flex;}
+.lightbox img{max-width:90vw;max-height:80vh;border-radius:16px;object-fit:contain;}
 </style>
 </head>
 <body>
@@ -144,6 +157,7 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
     <button class="tab" onclick="switchTab('plan')">📅 خطتي</button>
     <button class="tab" onclick="switchTab('points')">🏆 نقاطي</button>
     <button class="tab" onclick="switchTab('fasting')">🌙 صيامي</button>
+    <button class="tab" onclick="switchTab('photos')">📸 صوري</button>
     <button class="tab" onclick="switchTab('reminders')">🔔 تذكيراتي</button>
     <button id="waTabBtn" class="tab" onclick="openWhatsApp()" style="background:linear-gradient(135deg,#25d366,#128c7e);color:white;border-color:transparent;">💬 تواصلي مع الكوتش</button>
   </div>
@@ -257,6 +271,55 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
 
   <!-- تذكيرات -->
   <!-- صفحة الصيام -->
+  <!-- صفحة صور الوزن -->
+  <div class="page" id="page-photos">
+    <div class="card">
+      <div class="card-title">📸 صور تقدمي</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:1rem;">ارفعي صورة الميزان أو صورة جسمك لتتابعي تقدمك 💪</div>
+
+      <!-- زر الرفع -->
+      <div class="photo-upload-btn" onclick="document.getElementById('weightPhotoInput').click()">
+        <div style="font-size:2rem;margin-bottom:0.3rem;">📷</div>
+        <div style="font-size:0.82rem;font-weight:700;color:var(--rose);">ارفعي صورة جديدة</div>
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:0.2rem;">صورة الميزان أو صورتك</div>
+      </div>
+      <input type="file" id="weightPhotoInput" accept="image/*" style="display:none" onchange="uploadWeightPhoto(this)">
+
+      <!-- نموذج إضافة بيانات مع الصورة -->
+      <div id="photoFormWrap" style="display:none;margin-top:1rem;background:rgba(232,73,106,0.05);border:1px solid rgba(232,73,106,0.15);border-radius:14px;padding:1rem;">
+        <img id="photoFormPreview" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin-bottom:0.8rem;">
+        <div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:0.8rem;">
+          <div class="fi" style="flex:1;min-width:100px;">
+            <label>الوزن (كغ)</label>
+            <input type="number" id="photoWeight" step="0.1" placeholder="مثال: 75.5">
+          </div>
+          <div class="fi" style="flex:1;min-width:100px;">
+            <label>ملاحظة</label>
+            <input type="text" id="photoNote" placeholder="اختياري">
+          </div>
+        </div>
+        <div style="display:flex;gap:0.6rem;">
+          <button class="save-btn" onclick="confirmPhotoUpload()" style="margin-top:0;flex:1;">💾 حفظ الصورة</button>
+          <button onclick="cancelPhotoUpload()" style="padding:0.7rem 1rem;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:var(--muted);font-family:'Tajawal',sans-serif;cursor:pointer;">إلغاء</button>
+        </div>
+      </div>
+
+      <!-- المعرض -->
+      <div id="photoGallery" class="photo-gallery" style="margin-top:1rem;"></div>
+      <div id="photoEmpty" style="text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;display:none;">
+        <div style="font-size:2rem;margin-bottom:0.5rem;">📷</div>
+        ما في صور بعد — ارفعي أول صورة!
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightboxImg" src="">
+    <div id="lightboxInfo" style="color:white;font-size:0.85rem;text-align:center;"></div>
+    <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);">اضغطي للإغلاق</div>
+  </div>
+
   <div class="page" id="page-fasting">
     <div class="card">
       <div class="card-title">🌙 تتبع الصيام</div>
@@ -543,6 +606,7 @@ function switchTab(tab){
   document.getElementById('page-'+tab).classList.add('active');
   if(tab==='plan')    loadWeeklyPlan();
   if(tab==='fasting') loadFasting();
+  if(tab==='photos')  loadWeightPhotos();
   if(tab==='points')  renderPoints();
   if(tab==='weight')  renderWeightChart();
   if(tab==='report')  renderReport();
@@ -1223,6 +1287,139 @@ async function loadFastConfig() {
       tab.style.display = '';
     }
   } catch(e) { tab.style.display = ''; }
+}
+
+
+// ====================================================
+// صور الوزن — Supabase Storage
+// ====================================================
+const SB_STORAGE = 'https://laqiqcyiztvpqctxnxvx.supabase.co/storage/v1';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8';
+const SB_SVC = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE0MzM5NiwiZXhwIjoyMDk0NzE5Mzk2fQ.cMuVQ-2Hke_wzdUlM1PKiFkeXTodpRlI4u8PT7Sg5kk';
+const BUCKET = 'weight-photos';
+
+let pendingPhotoFile = null;
+
+function uploadWeightPhoto(input) {
+  const file = input.files[0];
+  if(!file) return;
+  pendingPhotoFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('photoFormPreview').src = e.target.result;
+    document.getElementById('photoFormWrap').style.display = 'block';
+    document.getElementById('photoWeight').value = '';
+    document.getElementById('photoNote').value = '';
+    document.querySelector('.photo-upload-btn').style.display = 'none';
+    document.getElementById('photoFormWrap').scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function cancelPhotoUpload() {
+  pendingPhotoFile = null;
+  document.getElementById('photoFormWrap').style.display = 'none';
+  document.querySelector('.photo-upload-btn').style.display = 'flex';
+}
+
+async function confirmPhotoUpload() {
+  if(!pendingPhotoFile || !ME) return;
+  const weight = document.getElementById('photoWeight').value.trim();
+  const note   = document.getElementById('photoNote').value.trim();
+  const date   = new Date().toISOString().split('T')[0];
+  const ts     = Date.now();
+  const ext    = pendingPhotoFile.name.split('.').pop() || 'jpg';
+  const path   = `${ME.id}/${date}_${ts}.${ext}`;
+
+  toast('⏳ جاري الرفع...');
+
+  try {
+    // رفع الصورة لـ Supabase Storage
+    const uploadRes = await fetch(`${SB_STORAGE}/object/${BUCKET}/${path}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + SB_SVC,
+        'Content-Type': pendingPhotoFile.type || 'image/jpeg',
+        'x-upsert': 'true'
+      },
+      body: pendingPhotoFile
+    });
+
+    if(!uploadRes.ok) { toast('⚠️ خطأ في رفع الصورة'); return; }
+
+    // حفظ بيانات الصورة في Supabase DB
+    const photoUrl = `${SB_STORAGE}/object/public/${BUCKET}/${path}`;
+    await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/weight_photos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_SVC,
+        'Authorization': 'Bearer ' + SB_SVC,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        sub_id: ME.id,
+        photo_url: photoUrl,
+        weight: weight ? parseFloat(weight) : null,
+        note: note || null,
+        date: date
+      })
+    });
+
+    toast('✅ تم رفع الصورة!');
+    cancelPhotoUpload();
+    await loadWeightPhotos();
+
+  } catch(e) {
+    toast('⚠️ خطأ في الاتصال');
+    console.error(e);
+  }
+}
+
+async function loadWeightPhotos() {
+  if(!ME) return;
+  const gallery = document.getElementById('photoGallery');
+  const empty   = document.getElementById('photoEmpty');
+  if(!gallery) return;
+
+  gallery.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:0.5rem;">⏳ جاري التحميل...</div>';
+
+  try {
+    const r = await fetch(
+      `https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/weight_photos?sub_id=eq.${ME.id}&order=date.desc&select=*`,
+      { headers: { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON } }
+    );
+    const photos = await r.json();
+
+    if(!photos.length) {
+      gallery.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    gallery.innerHTML = photos.map(p => `
+      <div class="photo-item" onclick="openLightbox('${p.photo_url}','${fmtDate(p.date)}${p.weight?' • '+p.weight+' كغ':''}${p.note?' • '+p.note:''}')">
+        <img src="${p.photo_url}" loading="lazy" onerror="this.src=''">
+        <div class="photo-item-info">
+          <div style="color:var(--muted);">${fmtDate(p.date)}</div>
+          ${p.weight ? `<div class="photo-item-weight">⚖️ ${p.weight} كغ</div>` : ''}
+          ${p.note ? `<div style="font-size:0.65rem;color:var(--muted);">${p.note}</div>` : ''}
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    gallery.innerHTML = '<div style="color:#f87171;font-size:0.8rem;padding:0.5rem;">⚠️ تعذّر التحميل</div>';
+  }
+}
+
+function openLightbox(url, info) {
+  document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightboxInfo').textContent = info;
+  document.getElementById('lightbox').classList.add('show');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
 }
 
 </script>
