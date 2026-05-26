@@ -451,8 +451,12 @@ async function loadData(){
     renderApproved();
     renderWASubsList();
     renderFastSubsList();
-    renderCompliance(complianceDays);
-    renderNotLogged();
+    // تحديث الصفحة الحالية
+    const activePage = document.querySelector('.admin-page.active')?.id;
+    if(activePage==='page-compliance') renderCompliance(complianceDays);
+    if(activePage==='page-broadcast')  renderNotLogged();
+    if(activePage==='page-pending')    renderPending();
+    if(activePage==='page-subscribers') renderApproved();
     if(selectedSubId) refreshDetail();
   }catch(e){console.error(e);toast('⚠️ خطأ في التحميل');}
 }
@@ -647,14 +651,14 @@ async function doApprove(){
   const pass=document.getElementById('approvePass').value.trim();
   if(!pass){toast('⚠️ أدخلي كلمة سر');return;}
   const r=await fetch(SB_URL+'/rest/v1/subscribers?id=eq.'+id,{method:'PATCH',headers:HJ,body:JSON.stringify({status:'approved',password:pass})});
-  if(r.ok){toast('✅ تم قبول المشتركة — كلمة السر: '+pass,5000);closeModal('approveModal');await loadData();}
+  if(r.ok){toast('✅ تم قبول المشتركة — كلمة السر: '+pass,5000);closeModal('approveModal');await loadData();renderPending();}
   else toast('⚠️ خطأ في الموافقة');
 }
 
 async function doReject(){
   const id=document.getElementById('approveSubId').value;
   const r=await fetch(SB_URL+'/rest/v1/subscribers?id=eq.'+id,{method:'PATCH',headers:HJ,body:JSON.stringify({status:'rejected'})});
-  if(r.ok){toast('تم رفض الطلب');closeModal('approveModal');await loadData();}
+  if(r.ok){toast('تم رفض الطلب');closeModal('approveModal');await loadData();renderPending();}
 }
 
 // ====== تعديل البيانات ======
@@ -939,15 +943,14 @@ function sendBroadcast() {
 
 
 function goPage(pageId) {
-  // إخفاء كل الصفحات
   document.querySelectorAll('.admin-page').forEach(p => p.classList.remove('active'));
-  // إظهار الصفحة المطلوبة
   const page = document.getElementById(pageId);
   if(page) { page.classList.add('active'); window.scrollTo({top:0,behavior:'smooth'}); }
-  // تحميل بيانات حسب الصفحة
   if(pageId === 'page-compliance') renderCompliance(complianceDays);
-  if(pageId === 'page-broadcast')  renderNotLogged();
+  if(pageId === 'page-broadcast')  { if(allSubs.length) renderNotLogged(); else loadData().then(()=>renderNotLogged()); }
   if(pageId === 'page-settings')   { loadFastSettings(); loadWASettings(); }
+  if(pageId === 'page-pending')    { if(allSubs.length) renderPending(); else loadData(); }
+  if(pageId === 'page-subscribers'){ if(allSubs.length) renderApproved(); else loadData(); }
 }
 
 // ====== إعدادات الصيام ======
