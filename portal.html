@@ -111,6 +111,32 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
 .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;align-items:center;justify-content:center;flex-direction:column;gap:1rem;}
 .lightbox.show{display:flex;}
 .lightbox img{max-width:90vw;max-height:80vh;border-radius:16px;object-fit:contain;}
+
+/* تهنئة عيد الميلاد */
+.birthday-banner{background:linear-gradient(135deg,#7c3aed,#e8496a,#f59e0b);border-radius:20px;padding:1.2rem 1.4rem;margin:0 1rem 1rem;text-align:center;animation:bdIn .5s ease;position:relative;overflow:hidden;}
+.birthday-banner::before{content:'🎂🎉🎈🎊🎁';position:absolute;top:-10px;left:0;right:0;font-size:1.5rem;opacity:0.15;letter-spacing:8px;}
+@keyframes bdIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+
+/* شارات الإنجاز */
+.badges-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:0.8rem;margin-top:0.8rem;}
+.badge-item{background:rgba(255,255,255,0.03);border:1.5px solid var(--border);border-radius:16px;padding:0.8rem 0.5rem;text-align:center;transition:all .2s;}
+.badge-item.earned{border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.06);}
+.badge-item.locked{opacity:0.35;filter:grayscale(1);}
+.badge-icon{font-size:2rem;margin-bottom:0.3rem;}
+.badge-name{font-size:0.68rem;font-weight:800;color:var(--text);}
+.badge-desc{font-size:0.6rem;color:var(--muted);margin-top:0.1rem;}
+
+/* تذكير الماء */
+.water-reminder{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:white;border-radius:18px;padding:0.8rem 1.4rem;font-size:0.88rem;font-weight:800;z-index:9999;transition:transform .4s cubic-bezier(.34,1.56,.64,1);text-align:center;box-shadow:0 8px 24px rgba(59,130,246,0.4);}
+.water-reminder.show{transform:translateX(-50%) translateY(0);}
+
+/* مقارنة الصور */
+.compare-wrap{position:relative;border-radius:16px;overflow:hidden;background:rgba(0,0,0,0.3);}
+.compare-wrap img{width:50%;height:220px;object-fit:cover;display:inline-block;vertical-align:top;}
+.compare-label{position:absolute;top:0.5rem;font-size:0.7rem;font-weight:900;color:white;background:rgba(0,0,0,0.6);padding:0.2rem 0.5rem;border-radius:6px;}
+.compare-label.before{right:51%;}
+.compare-label.after{left:51%;}
+.compare-divider{position:absolute;top:0;bottom:0;left:50%;width:3px;background:white;transform:translateX(-50%);}
 </style>
 </head>
 <body>
@@ -158,12 +184,14 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
     <button class="tab" onclick="switchTab('points')">🏆 نقاطي</button>
     <button class="tab" onclick="switchTab('fasting')">🌙 صيامي</button>
     <button class="tab" onclick="switchTab('photos')">📸 صوري</button>
+    <button class="tab" onclick="switchTab('badges')">🏅 إنجازاتي</button>
     <button class="tab" onclick="switchTab('reminders')">🔔 تذكيراتي</button>
     <button id="waTabBtn" class="tab" onclick="openWhatsApp()" style="background:linear-gradient(135deg,#25d366,#128c7e);color:white;border-color:transparent;">💬 تواصلي مع الكوتش</button>
   </div>
 
   <!-- إدخال يومي -->
   <!-- بانر العداد والـ subtitle — يظهران لكل المشتركات -->
+  <div id="birthdayBanner"></div>
   <div id="globalBanners" style="padding:0 1rem;"></div>
 
   <!-- ملاحظة الكوتش — تظهر إذا موجودة -->
@@ -276,6 +304,17 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
     <div class="card">
       <div class="card-title">📸 صور تقدمي</div>
       <div style="font-size:0.78rem;color:var(--muted);margin-bottom:1rem;">ارفعي صورة الميزان أو صورة جسمك لتتابعي تقدمك 💪</div>
+      <!-- مقارنة قبل وبعد -->
+      <div id="compareSection" style="display:none;margin-bottom:1.2rem;">
+        <div style="font-size:0.82rem;font-weight:800;color:var(--rose);margin-bottom:0.6rem;">📸 مقارنة قبل وبعد</div>
+        <div class="compare-wrap" id="compareWrap">
+          <img id="compareImgBefore" src="">
+          <img id="compareImgAfter" src="">
+          <div class="compare-label before">قبل</div>
+          <div class="compare-label after">بعد</div>
+          <div class="compare-divider"></div>
+        </div>
+      </div>
 
       <!-- زر الرفع -->
       <div class="photo-upload-btn" onclick="document.getElementById('weightPhotoInput').click()">
@@ -333,6 +372,22 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
       <div class="card-title">📋 سجل الصيام</div>
       <div id="fastingLog"></div>
     </div>
+  </div>
+
+  <!-- 🏅 صفحة الشارات -->
+  <div class="page" id="page-badges">
+    <div class="card">
+      <div class="card-title">🏅 إنجازاتي</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.5rem;">اكسبي الشارات بالالتزام والتقدم 💪</div>
+      <div class="badges-grid" id="badgesGrid"></div>
+    </div>
+  </div>
+
+  <!-- تذكير الماء -->
+  <div class="water-reminder" id="waterReminder">
+    💧 حان وقت شرب الماء!<br>
+    <span style="font-size:0.72rem;opacity:0.85;">اشربي كوب ماء الحين 🥤</span>
+    <button onclick="dismissWaterReminder()" style="display:block;margin:0.4rem auto 0;padding:0.25rem 0.8rem;background:rgba(255,255,255,0.2);border:none;border-radius:8px;color:white;font-family:'Tajawal',sans-serif;font-size:0.75rem;cursor:pointer;">حسناً ✓</button>
   </div>
 
   <div class="page" id="page-reminders">
@@ -628,6 +683,8 @@ function showDashboard(){
   renderPoints();
   loadWeeklyPlan();
   loadFastConfig();
+  checkBirthday();
+  initWaterReminder();
 }
 
 function doLogout(){
@@ -650,7 +707,8 @@ function switchTab(tab){
   document.getElementById('page-'+tab).classList.add('active');
   if(tab==='plan')    loadWeeklyPlan();
   if(tab==='fasting') loadFasting();
-  if(tab==='photos')  loadWeightPhotos();
+  if(tab==='photos')  { loadWeightPhotos(); loadCompare(); }
+  if(tab==='badges')  renderBadges();
   if(tab==='points')  renderPoints();
   if(tab==='weight')  renderWeightChart();
   if(tab==='report')  renderReport();
@@ -1471,6 +1529,145 @@ function openLightbox(url, info) {
 
 function closeLightbox() {
   document.getElementById('lightbox').classList.remove('show');
+}
+
+
+// ====================================================
+// 🎂 تهنئة عيد الميلاد
+// ====================================================
+function checkBirthday() {
+  if(!ME?.age) return;
+  // نحسب من created_at إذا عنده تاريخ ميلاد
+  const today = new Date();
+  const birthStr = ME.birth_date || ME.birthdate || null;
+  if(!birthStr) return;
+  const birth = new Date(birthStr);
+  if(birth.getDate()===today.getDate() && birth.getMonth()===today.getMonth()) {
+    const age = today.getFullYear() - birth.getFullYear();
+    const el = document.getElementById('birthdayBanner');
+    if(el) el.innerHTML = `
+      <div class="birthday-banner">
+        <div style="font-size:2.5rem;margin-bottom:0.3rem;">🎂</div>
+        <div style="font-size:1.1rem;font-weight:900;color:white;">عيد ميلادك سعيد ${ME.name}! 🎉</div>
+        <div style="font-size:0.82rem;color:rgba(255,255,255,0.85);margin-top:0.3rem;">كل عام وأنتِ بخير وأقرب لهدفك ✨</div>
+        <div style="font-size:0.75rem;color:rgba(255,255,255,0.7);margin-top:0.2rem;">عمرك ${age} سنة 💕</div>
+      </div>`;
+  }
+}
+
+// ====================================================
+// 🔔 تذكير شرب الماء
+// ====================================================
+let waterReminderTimer = null;
+
+function initWaterReminder() {
+  // كل ساعتين
+  clearInterval(waterReminderTimer);
+  waterReminderTimer = setInterval(showWaterReminder, 2 * 60 * 60 * 1000);
+  // تذكير أول بعد 30 دقيقة من الدخول
+  setTimeout(showWaterReminder, 30 * 60 * 1000);
+}
+
+function showWaterReminder() {
+  const el = document.getElementById('waterReminder');
+  if(!el) return;
+  el.classList.add('show');
+  // تختفي تلقائياً بعد 10 ثواني
+  setTimeout(() => el.classList.remove('show'), 10000);
+}
+
+function dismissWaterReminder() {
+  document.getElementById('waterReminder').classList.remove('show');
+}
+
+// ====================================================
+// 🏅 شارات الإنجاز
+// ====================================================
+const BADGES_DEF = [
+  { id:'first_entry',  icon:'🌟', name:'أول خطوة',     desc:'سجّلتِ أول وجبة',           check: (e,s) => e.length >= 1 },
+  { id:'week_7',       icon:'🔥', name:'أسبوع كامل',    desc:'7 أيام متتالية',            check: (e,s) => maxStreak(e) >= 7 },
+  { id:'month_30',     icon:'💎', name:'شهر من الذهب',  desc:'30 يوم متتالية',            check: (e,s) => maxStreak(e) >= 30 },
+  { id:'water_hero',   icon:'💧', name:'بطلة الماء',    desc:'سجّلتِ الماء 14 يوم',       check: (e,s) => e.filter(x=>x.water).length >= 14 },
+  { id:'sport_lover',  icon:'🏃', name:'رياضية',        desc:'سجّلتِ رياضة 7 أيام',       check: (e,s) => e.filter(x=>x.sport).length >= 7 },
+  { id:'excellent_10', icon:'🏆', name:'التزام ممتاز',  desc:'10 أيام التزام ممتاز',       check: (e,s) => e.filter(x=>x.commit==='ممتاز').length >= 10 },
+  { id:'half_goal',    icon:'🎯', name:'نصف الطريق',    desc:'وصلتِ لنصف هدفك',           check: (e,s) => checkHalfGoal(e,s) },
+  { id:'goal_done',    icon:'🥇', name:'حققتِ هدفك',    desc:'وصلتِ للوزن المستهدف',      check: (e,s) => checkGoalDone(e,s) },
+  { id:'photo_5',      icon:'📸', name:'مصوّرة',        desc:'رفعتِ 5 صور تقدم',          check: (e,s) => false },// يتحقق لاحقاً
+  { id:'days_50',      icon:'⚡', name:'50 يوم',        desc:'50 يوم في البرنامج',         check: (e,s) => e.length >= 50 },
+  { id:'days_100',     icon:'🌈', name:'100 يوم',       desc:'100 يوم في البرنامج',        check: (e,s) => e.length >= 100 },
+  { id:'morning_bird', icon:'🌅', name:'الطائر المبكر', desc:'سجّلتِ قبل 9 صباحاً 5 مرات',check: (e,s) => false },
+];
+
+function maxStreak(entries) {
+  const sorted = [...entries].sort((a,b)=>a.date.localeCompare(b.date));
+  let streak=1, max=1;
+  for(let i=1;i<sorted.length;i++){
+    const d1=new Date(sorted[i-1].date), d2=new Date(sorted[i].date);
+    if((d2-d1)/86400000===1){streak++;if(streak>max)max=streak;}else streak=1;
+  }
+  return sorted.length?max:0;
+}
+
+function checkHalfGoal(entries, sub) {
+  if(!sub?.weight||!sub?.target) return false;
+  const start=parseFloat(sub.weight), target=parseFloat(sub.target);
+  const latest=entries.filter(e=>e.weight).sort((a,b)=>b.date.localeCompare(a.date))[0];
+  if(!latest) return false;
+  const current=parseFloat(latest.weight);
+  const totalDiff=Math.abs(target-start);
+  const done=Math.abs(current-start);
+  return done >= totalDiff*0.5;
+}
+
+function checkGoalDone(entries, sub) {
+  if(!sub?.weight||!sub?.target) return false;
+  const target=parseFloat(sub.target);
+  const latest=entries.filter(e=>e.weight).sort((a,b)=>b.date.localeCompare(a.date))[0];
+  if(!latest) return false;
+  const current=parseFloat(latest.weight);
+  const start=parseFloat(sub.weight);
+  if(target < start) return current <= target;
+  return current >= target;
+}
+
+function renderBadges() {
+  const grid = document.getElementById('badgesGrid');
+  if(!grid || !ME) return;
+  const earned = BADGES_DEF.map(b => ({
+    ...b,
+    got: b.check(MY_ENTRIES, ME)
+  })).sort((a,b) => (b.got?1:0)-(a.got?1:0));
+
+  grid.innerHTML = earned.map(b => `
+    <div class="badge-item ${b.got?'earned':'locked'}">
+      <div class="badge-icon">${b.icon}</div>
+      <div class="badge-name">${b.name}</div>
+      <div class="badge-desc">${b.desc}</div>
+      ${b.got?'<div style="font-size:0.6rem;color:#f59e0b;margin-top:0.2rem;font-weight:800;">✅ مكتسبة</div>':''}
+    </div>`).join('');
+}
+
+// ====================================================
+// 📸 مقارنة صور قبل وبعد
+// ====================================================
+async function loadCompare() {
+  if(!ME) return;
+  try {
+    const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8';
+    const r = await fetch(
+      `https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/weight_photos?sub_id=eq.${ME.id}&order=date.asc&select=photo_url,date`,
+      { headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON } }
+    );
+    const photos = await r.json();
+    const wrap = document.getElementById('compareSection');
+    if(!photos || photos.length < 2) { if(wrap) wrap.style.display='none'; return; }
+    // أول صورة (قبل) وآخر صورة (بعد)
+    const before = photos[0];
+    const after  = photos[photos.length-1];
+    document.getElementById('compareImgBefore').src = before.photo_url;
+    document.getElementById('compareImgAfter').src  = after.photo_url;
+    if(wrap) wrap.style.display = 'block';
+  } catch(e) {}
 }
 
 </script>
