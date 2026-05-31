@@ -127,8 +127,8 @@ body{background:var(--dark);color:var(--text);font-family:'Tajawal',sans-serif;m
 .badge-desc{font-size:0.6rem;color:var(--muted);margin-top:0.1rem;}
 
 /* تذكير الماء */
-.water-reminder{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:white;border-radius:18px;padding:0.8rem 1.4rem;font-size:0.88rem;font-weight:800;z-index:9999;transition:transform .4s cubic-bezier(.34,1.56,.64,1);text-align:center;box-shadow:0 8px 24px rgba(59,130,246,0.4);}
-.water-reminder.show{transform:translateX(-50%) translateY(0);}
+.water-reminder{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:white;border-radius:18px;padding:0.8rem 1.4rem;font-size:0.88rem;font-weight:800;z-index:9999;text-align:center;box-shadow:0 8px 24px rgba(59,130,246,0.4);opacity:0;pointer-events:none;transition:opacity .3s ease;display:block !important;}
+.water-reminder.show{opacity:1;pointer-events:auto;}
 
 /* مقارنة الصور */
 .compare-wrap{position:relative;border-radius:16px;overflow:hidden;background:rgba(0,0,0,0.3);}
@@ -1572,12 +1572,17 @@ function showWaterReminder() {
   const el = document.getElementById('waterReminder');
   if(!el) return;
   el.classList.add('show');
-  // تختفي تلقائياً بعد 10 ثواني
   setTimeout(() => el.classList.remove('show'), 10000);
 }
 
 function dismissWaterReminder() {
-  document.getElementById('waterReminder').classList.remove('show');
+  const el = document.getElementById('waterReminder');
+  el.classList.remove('show');
+}
+
+function showWaterReminderAgain() {
+  const el = document.getElementById('waterReminder');
+  el.style.display = '';
 }
 
 // ====================================================
