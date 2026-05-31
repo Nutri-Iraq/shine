@@ -188,7 +188,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     <button class="back-btn" onclick="goPage('home')">← رجوع</button>
     <div class="page-head">⏳ طلبات الانتظار</div>
     <div class="table-wrap">
-      <table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>الوزن</th><th>الهدف</th><th>البرنامج</th><th>التاريخ</th><th>إجراء</th></tr></thead>
+      <table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>الوزن</th><th>الهدف</th><th>البرنامج</th><th>التاريخ</th><th>إنستا</th><th>إجراء</th></tr></thead>
       <tbody id="pendingTable"><tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--muted);">جاري التحميل...</td></tr></tbody></table>
     </div>
   </div>
@@ -483,6 +483,7 @@ function renderPending(){
       <td style="direction:ltr;">${s.phone||'—'}</td>
       <td>${s.weight||'—'} كغ</td><td>${s.target||'—'} كغ</td>
       <td>${s.program||'—'}</td><td>${fmtDate((s.created_at||'').split('T')[0])}</td>
+      <td style="font-size:0.75rem;color:var(--muted);">${s.instagram?'📸 @'+s.instagram:s.phone?'📱 '+s.phone:'—'}</td>
       <td><button class="btn-sm btn-green" onclick="openApproveModal('${s.id}','${s.name.replace(/'/g,"\\'")}')">✅ موافقة / رفض</button></td>
     </tr>`).join('')
     :'<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--muted);">لا توجد طلبات بالانتظار</td></tr>';
@@ -544,6 +545,7 @@ function refreshDetail(){
   const rows=[
     {icon:'📛',label:'الاسم',val:sub.name},
     {icon:'📱',label:'الهاتف',val:sub.phone,dir:true},
+    {icon:'📸',label:'إنستا',val:sub.instagram?'@'+sub.instagram:null},
     {icon:'🎂',label:'العمر',val:sub.age?sub.age+' سنة':null},
     {icon:'📏',label:'الطول',val:sub.height?sub.height+' سم':null},
     {icon:'⚖️',label:'الوزن الحالي',val:sub.weight?sub.weight+' كغ':null},
@@ -606,8 +608,13 @@ function drawWeightChart(subId){
 
 // ===== modal الموافقة =====
 function openApproveModal(id,name){
+  const sub=allSubs.find(s=>s.id===id);
   document.getElementById('approveSubId').value=id;
-  document.getElementById('approveSubName').textContent='المشتركة: '+name;
+  let contact = '';
+  if(sub?.phone)     contact = '📱 '+sub.phone;
+  else if(sub?.instagram) contact = '📸 @'+sub.instagram;
+  document.getElementById('approveSubName').innerHTML=
+    '<strong>'+name+'</strong>'+(contact?'<span style="margin-right:0.5rem;font-size:0.78rem;color:var(--muted);">'+contact+'</span>':'');
   document.getElementById('approvePass').value=Math.random().toString(36).slice(-8);
   document.getElementById('approveModal').style.display='flex';
 }
