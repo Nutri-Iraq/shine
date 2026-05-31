@@ -181,7 +181,7 @@ async function submitForm(){
   if(selectedProg==='تسمين' && t<=w){showToast('⚠️ الوزن المستهدف يجب أن يكون أكثر من الحالي للتسمين');return;}
   const btn=document.getElementById('submitBtn');
   btn.disabled=true;btn.textContent='⏳ جاري الإرسال...';
-  const data={name,phone:phone||null,instagram:insta||null,username:insta?('@'+insta):null,age:parseInt(document.getElementById('age').value)||null,height:parseFloat(document.getElementById('height').value)||null,weight:parseFloat(weight),target:parseFloat(target),program:selectedProg,notes:document.getElementById('notes').value.trim()||null,date:new Date().toISOString().split('T')[0]};
+  const data={name,phone:phone||null,instagram:insta||null,age:parseInt(document.getElementById('age').value)||null,height:parseFloat(document.getElementById('height').value)||null,weight:parseFloat(weight),target:parseFloat(target),program:selectedProg,notes:document.getElementById('notes').value.trim()||null,date:new Date().toISOString().split('T')[0]};
   try{
     const r=await fetch('https://laqiqcyiztvpqctxnxvx.supabase.co/rest/v1/subscribers',{method:'POST',headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcWlxY3lpenR2cHFjdHhueHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDMzOTYsImV4cCI6MjA5NDcxOTM5Nn0.P5OI78c0rpuubOyw4DhQgcCyh11WDXghBoGTd73Bw-8','Prefer':'return=minimal'},body:JSON.stringify(data)});
     if(r.status===201||r.ok){
